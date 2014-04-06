@@ -1,0 +1,37 @@
+.sticky-alert{
+    position: fixed;
+    display: block;
+    width: 400px;
+    padding: 16px;
+    text-align: center;
+    background-color: #ffc;
+    border-style: solid;
+    border-color: #d8d8d8;
+    border-width: 0 1px 1px;
+    border-radius: 0 3px 3px 0;
+    top: 0;
+    left: 50%;
+    margin-left: -200px;
+
+    p{
+        margin: 6px 0 0;
+        font-size: 14px;
+    }
+
+    .close{
+        float: right;
+        color: #888;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 18px;
+
+        &:hover{
+            color: #333;
+        }
+    }
+
+    &.error{
+        background-color: #c00;
+        color: #f8f8f8;
+    }
+}

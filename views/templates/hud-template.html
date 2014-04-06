@@ -1,0 +1,15 @@
+<script type="text/template" id="hud-template">
+    <a class="btn float-right" data-action="add_street">Build Street</a>
+
+    <ul class="list">
+        <li>
+            <%=clock.get_month()%> Month of Year <%=clock.get_year()%>
+        </li>
+        <li>
+            <%=clock.get_time('h:m')%>
+        </li>
+        <li>Funds: $<%=town.balance%></li>
+    </ul>
+
+    <h1><%=town.name%></h1>
+</script>

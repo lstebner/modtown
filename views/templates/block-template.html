@@ -1,0 +1,19 @@
+<script type="text/template" id="block-template">
+    <%
+        if (typeof(structure) == "undefined"){
+            structure = null;
+        }
+    %>
+
+    <div class="block" data-id="<%=id%>">
+        Block <%=id%>
+
+        <div class="build_actions">
+            <a href="#" data-action="build_structure" data-value="farm">Build Farm</a>
+            <a href="#" data-action="build_structure" data-value="factory">Build Factory</a>
+            <a href="#" data-action="build_structure" data-value="housing">Build Housing</a>
+        </div>
+
+        <div class="structure"></div>
+    </div>
+</script>

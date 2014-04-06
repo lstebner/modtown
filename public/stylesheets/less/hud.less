@@ -1,0 +1,45 @@
+#hud{
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: @hud_height;
+    background-color: #fafafa;
+    border-bottom: 1px solid #d8d8d8;
+    padding: 0 20px;
+
+    h1{
+        margin: 0;
+        font-size: 22px;
+        color: #555;
+        font-weight: 300;
+        margin: 16px 8px;
+    }
+
+    .btn{
+        margin: 8px;
+    }
+
+    .list{
+        list-style-type: none;
+        padding: 0;
+        float: right;
+        border-style: solid;
+        border-color: #d8d8d8;
+        border-width: 0;
+        margin: 0 40px;
+
+        li{
+            display: inline-block;
+            border-right: 1px solid #d8d8d8;
+            min-width: 120px;
+            text-align: center;
+            font-size: 18px;
+            padding: 18px;
+
+            &:last-child{
+                border-right: none;
+            }
+        }
+    }
+}
