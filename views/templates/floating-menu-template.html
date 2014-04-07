@@ -1,0 +1,14 @@
+<script type="text/template" id="floating-menu-template">
+    <div class="titlebar">
+        <a class="close" href="#" data-action="cancel">x</a>
+        <%=title%>
+    </div>
+    <div class="body">
+        <ul class="unstyled items">
+            <% _.each(items, function(item_text, action){ %>
+                <li>
+                    <a href="#" class="btn block" data-action="<%=action%>"><%=item_text%></a>
+            <% }); %>
+        </ul>
+    </div>
+</script>
