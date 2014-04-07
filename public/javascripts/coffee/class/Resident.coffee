@@ -24,9 +24,9 @@ class Resident extends RenderedObject
 
     setup_stats: ->
         @gender = if Math.random() > Resident.gender_weight_male
-            'male'
-        else
             'female'
+        else
+            'male'
 
         @name = Resident.random_name(@gender)
 
