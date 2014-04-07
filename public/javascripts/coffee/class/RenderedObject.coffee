@@ -1,3 +1,7 @@
+_next_id = 0
+_auto_id = ->
+    _next_id += 1
+
 class RenderedObject
     constructor: (container, opts={}) ->
         @container = $ container
@@ -7,7 +11,7 @@ class RenderedObject
         @set_opts opts
 
         @name = if @opts.name? then @opts.name else ''
-        @id = if @opts.id? then @opts.id else -1
+        @id = if @opts.id? then @opts.id else _auto_id()
 
         @setup_events()
 
