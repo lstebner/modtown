@@ -39,10 +39,11 @@ class Resident extends RenderedObject
             leave_work: WorldClock.duration('7', 'hours')
 
     default_opts: ->
-        _.extend
+        _.extend(
+            super,
             house: null
             employer: null
-        , super
+        )
 
     update: (clock) ->
         @state.update()

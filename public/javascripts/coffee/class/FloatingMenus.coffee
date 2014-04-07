@@ -9,16 +9,14 @@ class BuildMenu extends FloatingMenu
     default_opts: ->
         _.extend(
             super,
-            {
-                block_id: -1
-                street_id: -1
-                town: null
-                title: 'Build Menu'
-                items:
-                    build_farm: "Build Farm"
-                    build_factory: "Build Factory"
-                    build_housing: "Build Housing"
-            }
+            block_id: -1
+            street_id: -1
+            town: null
+            title: 'Build Menu'
+            items:
+                build_farm: "Build Farm"
+                build_factory: "Build Factory"
+                build_housing: "Build Housing"
         )
 
 
@@ -40,10 +38,8 @@ class VisitorMenu extends FloatingMenu
     default_opts: ->
         _.extend(
             super,
-            {
-                title: 'Visitor Actions'
-                items: 
-                    move_in: "Move In"
-                    kick_out: "Kick Out"
-            }
+            title: 'Visitor Actions'
+            items: 
+                move_in: "Move In"
+                kick_out: "Kick Out"
         )

@@ -525,11 +525,11 @@
     }
 
     FloatingMenu.prototype.default_opts = function() {
-      return _.extend({
+      return _.extend(FloatingMenu.__super__.default_opts.apply(this, arguments), {
         title: 'Floating Menu',
         items: [],
         open: false
-      }, FloatingMenu.__super__.default_opts.apply(this, arguments));
+      });
     };
 
     FloatingMenu.prototype.template_id = function() {
@@ -920,9 +920,9 @@
     Town.visitor_chance = .15;
 
     Town.prototype.default_opts = function() {
-      return _.extend({
+      return _.extend(Town.__super__.default_opts.apply(this, arguments), {
         balance: 0
-      }, Town.__super__.default_opts.apply(this, arguments));
+      });
     };
 
     function Town() {
@@ -1410,10 +1410,10 @@
     };
 
     Resident.prototype.default_opts = function() {
-      return _.extend({
+      return _.extend(Resident.__super__.default_opts.apply(this, arguments), {
         house: null,
         employer: null
-      }, Resident.__super__.default_opts.apply(this, arguments));
+      });
     };
 
     Resident.prototype.update = function(clock) {
@@ -1494,10 +1494,10 @@
     }
 
     Structure.prototype.default_opts = function() {
-      return _.extend({
+      return _.extend(Structure.__super__.default_opts.apply(this, arguments), {
         begin_construction: true,
         construction_time: WorldClock.duration(1, 'minutes')
-      }, Structure.__super__.default_opts.apply(this, arguments));
+      });
     };
 
     Structure.prototype.update = function(clock) {

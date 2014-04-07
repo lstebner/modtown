@@ -21,10 +21,11 @@ class Structure extends RenderedObject
         @change_state('begin_construction') if @opts.begin_construction
 
     default_opts: ->
-        _.extend
+        _.extend(
+            super,
             begin_construction: true
             construction_time: WorldClock.duration 1, 'minutes'
-        , super
+        )
 
     update: (clock) ->
         switch @state.current()

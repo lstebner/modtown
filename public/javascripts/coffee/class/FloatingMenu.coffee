@@ -14,11 +14,13 @@ class FloatingMenu extends RenderedObject
         @open() if @opts.open
 
     default_opts: ->
-        _.extend
+        _.extend(
+            super,
             title: 'Floating Menu'
             items: []
             open: false
-        , super
+        )
+        
 
     template_id: ->
         '#floating-menu-template'

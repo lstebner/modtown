@@ -4,9 +4,10 @@ class Town extends RenderedObject
     @visitor_chance: .15
 
     default_opts: ->
-        _.extend
+        _.extend(
+            super,
             balance: 0
-        , super
+        )
 
     constructor: ->
         super
