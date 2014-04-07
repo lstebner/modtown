@@ -1152,6 +1152,21 @@
   Resident = (function(_super) {
     __extends(Resident, _super);
 
+    Resident.male_names = ['Sonny', 'Art', 'Brett', 'Perry', 'Humberto', 'Carmine', 'Bernard', 'Myles', 'Frances', 'Octavio', 'Edmundo', 'Alan', 'Leland', 'Derek', 'Jamaal', 'Cecil', 'Kenton', 'Elwood', 'Buford', 'Mac'];
+
+    Resident.female_names = ['Celinda', 'Robena', 'Bonita', 'Katy', 'Esmeralda', 'Danae', 'Rena', 'Amberly', 'Tillie', 'Emily', 'Margareta', 'Shenita', 'Lavon', 'Willene', 'Felisha', 'Joaquina', 'Regine', 'Sheena', 'Denice', 'Rona'];
+
+    Resident.gender_weight_male = .65;
+
+    Resident.random_name = function(gender) {
+      var name;
+      if (gender == null) {
+        gender = 'male';
+      }
+      name = gender === 'male' ? this.male_names[Math.floor(Math.random() * Resident.male_names.length)] : this.female_names[Math.floor(Math.random() * Resident.female_names.length)];
+      return name;
+    };
+
     function Resident() {
       var _ref1;
       Resident.__super__.constructor.apply(this, arguments);
@@ -1163,6 +1178,8 @@
     }
 
     Resident.prototype.setup_stats = function() {
+      this.gender = Math.random() > Resident.gender_weight_male ? 'male' : 'female';
+      this.name = Resident.random_name(this.gender);
       this.sleep_schedule = {
         goto_bed: WorldClock.duration('9', 'hours'),
         wake_up: WorldClock.duration('2', 'hours')
@@ -1229,6 +1246,8 @@
     return Resident;
 
   })(RenderedObject);
+
+  World.Resident = Resident;
 
   /* --------------------------------------------
        Begin Structure.coffee

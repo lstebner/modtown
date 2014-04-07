@@ -1,4 +1,15 @@
 class Resident extends RenderedObject
+    @male_names: ['Sonny', 'Art', 'Brett', 'Perry', 'Humberto', 'Carmine', 'Bernard', 'Myles', 'Frances', 'Octavio', 'Edmundo', 'Alan', 'Leland', 'Derek', 'Jamaal', 'Cecil', 'Kenton', 'Elwood', 'Buford', 'Mac']
+    @female_names: ['Celinda' ,'Robena' ,'Bonita' ,'Katy' ,'Esmeralda' ,'Danae' ,'Rena' ,'Amberly' ,'Tillie' ,'Emily' ,'Margareta' ,'Shenita' ,'Lavon' ,'Willene' ,'Felisha' ,'Joaquina' ,'Regine' ,'Sheena' ,'Denice' ,'Rona']
+    @gender_weight_male: .65
+    @random_name: (gender='male') ->
+        name = if gender == 'male'
+            @male_names[Math.floor(Math.random() * Resident.male_names.length)]
+        else
+            @female_names[Math.floor(Math.random() * Resident.female_names.length)]
+
+        name
+
     constructor: ->
         super
 
@@ -12,6 +23,13 @@ class Resident extends RenderedObject
         @setup_stats()
 
     setup_stats: ->
+        @gender = if Math.random() > Resident.gender_weight_male
+            'male'
+        else
+            'female'
+
+        @name = Resident.random_name(@gender)
+
         @sleep_schedule = 
             goto_bed: WorldClock.duration('9', 'hours')
             wake_up: WorldClock.duration('2', 'hours')
@@ -59,3 +77,5 @@ class Resident extends RenderedObject
             @change_state('goto_bed')
         else if @employer && now > @work_schedule.goto_work
             @change_state('goto_work')
+
+World.Resident = Resident
