@@ -85,7 +85,7 @@ class ModTownGame extends RenderedObject
         #we handle all other elements below
         super
 
-        @hud.render(true)
+        @hud.render()
         @town.render()
 
 $ ->

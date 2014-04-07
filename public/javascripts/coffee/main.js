@@ -622,6 +622,24 @@
       });
     };
 
+    HUD.prototype.render = function() {
+      var fill_values, key, val, _results;
+      HUD.__super__.render.apply(this, arguments);
+      fill_values = {
+        calendar_month: this.view_data.clock.get_month(),
+        calendar_year: this.view_data.clock.get_year(),
+        clock_time: this.view_data.clock.get_time('h:m:s'),
+        balance: this.view_data.town.balance,
+        occupancy_percent: Math.round(this.view_data.town.occupancy_percent * 100)
+      };
+      _results = [];
+      for (key in fill_values) {
+        val = fill_values[key];
+        _results.push(this.container.find("[data-fill=" + key + "]").text(val));
+      }
+      return _results;
+    };
+
     return HUD;
 
   })(RenderedObject);
@@ -1625,7 +1643,7 @@
 
     ModTownGame.prototype.render = function() {
       ModTownGame.__super__.render.apply(this, arguments);
-      this.hud.render(true);
+      this.hud.render();
       return this.town.render();
     };
 

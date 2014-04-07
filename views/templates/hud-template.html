@@ -3,14 +3,13 @@
     <a class="btn float-right" data-action="pause">Pause</a>
 
     <ul class="list">
-        <li>
-            <%=clock.get_month()%> Month of Year <%=clock.get_year()%>
+        <li data-fill="calendar_date">
+            <span data-fill="calendar_month" /> Month of Year <span data-fill="calendar_year" />
         </li>
-        <li>
-            <%=clock.get_time('h:m:s')%>
+        <li data-fill="clock_time">
         </li>
-        <li>Funds: $<%=town.balance%></li>
-        <li>Occupancy: <%=Math.round(town.occupancy_percent * 100)%>%</li>
+        <li>Funds: $<span data-fill="balance"></span></li>
+        <li>Occupancy: <span data-fill="occupancy_percent"></span>%</li>
     </ul>
 
     <h1><%=town.name%></h1>
