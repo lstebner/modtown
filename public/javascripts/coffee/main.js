@@ -518,6 +518,7 @@
       }
       this.title = this.opts.title;
       this.items = this.opts.items;
+      this.default_position = this.container.position();
       this.setup_events();
       if (this.opts.open) {
         this.open();
@@ -579,6 +580,26 @@
         top: y,
         left: x
       });
+    };
+
+    FloatingMenu.prototype.best_position_for = function(x, y) {
+      var right_edge, x_padding, y_padding;
+      x_padding = 100;
+      y_padding = -this.container.height() / 3;
+      right_edge = x + this.container.width() + x_padding;
+      if (right_edge > $(window).width()) {
+        x = x - this.container.width() - x_padding;
+      } else {
+        x += x_padding;
+      }
+      if (y + y_padding < 0) {
+        y = y_padding;
+      } else if (y + y_padding > $(window).height()) {
+        y = $(window).height() - this.container.height() - y_padding;
+      } else {
+        y += y_padding;
+      }
+      return this.set_position(x, y);
     };
 
     FloatingMenu.prototype.trigger = function(event_name, value) {
@@ -1165,6 +1186,7 @@
               town: _this,
               open: true
             });
+            build_menu.best_position_for(e.clientX, e.clientY);
             return build_menu.container.one('item_selected', function(e, selection) {
               return $el.hide();
             });

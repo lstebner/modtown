@@ -195,6 +195,8 @@ class Town extends RenderedObject
                         town: @
                         open: true
 
+                    build_menu.best_position_for e.clientX, e.clientY
+
                     build_menu.container.one 'item_selected', (e, selection) =>
                         $el.hide()
 
