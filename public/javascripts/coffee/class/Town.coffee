@@ -1,6 +1,7 @@
 class Town extends RenderedObject
     @costs: 
         street: 100
+    @visitor_chance: .15
 
     default_opts: ->
         _.extend
@@ -41,6 +42,7 @@ class Town extends RenderedObject
         super
 
         @render_streets()
+        @render_visitors()
 
     update: (clock) ->
         for s in @streets
@@ -50,6 +52,10 @@ class Town extends RenderedObject
             r.update(clock)
 
         @get_occupancy_percent()
+
+        if @visitors.length < 12 && @occupancy_percent < .8 && clock.is_afternoon()
+            if Math.random() < Town.visitor_chance
+                @visitors.push @create_resident()
 
     _street_id: ->
         @next_street_id += 1
@@ -106,11 +112,23 @@ class Town extends RenderedObject
     create_resident: (props={}) ->
         props = @_resident_props props
         new_resident = new Resident null, props
-        @residents.push new_resident
 
     render_streets: ->
         for s in @streets
             s.render()
+
+    render_visitors: ->
+        $visitors = @container.find('.visitors')
+
+        if !@visitors.length
+            $visitors.hide()
+            return
+        else if !$visitors.is(':visible')
+            $visitors.show()
+
+        visitors_tmpl = _.template $('#visitors-template').html()
+        $visitors.empty()
+        $visitors.html visitors_tmpl { visitors: @visitors }
 
     add_funds: (how_much=0) ->
         #todo: verify transaction?

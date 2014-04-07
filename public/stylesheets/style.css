@@ -50,13 +50,16 @@
   background-color: #c00;
   color: #f8f8f8;
 }
+.town {
+  padding: 20px;
+}
 .town .street {
   display: block;
   height: 200px;
   padding: 30px;
   border: 1px solid #d8d8d8;
   text-align: center;
-  margin: 20px;
+  margin: 20px 0;
 }
 .town .street .actions {
   float: right;
@@ -117,6 +120,21 @@
 }
 #hud .list li:last-child {
   border-right: none;
+}
+.visitors {
+  border: 1px solid #d8d8d8;
+  padding: 16px 20px;
+}
+.visitors .cap {
+  margin: -16px 16px -16px -20px;
+  border-right: 1px solid #d8d8d8;
+  padding: 16px 20px;
+  background-color: #fafafa;
+  display: block;
+  float: left;
+}
+.visitors .visitor {
+  display: inline-block;
 }
 body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;

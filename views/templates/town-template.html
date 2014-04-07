@@ -1,5 +1,20 @@
 <script type="text/template" id="town-template">
     <div class="town">
+        <div class="visitors"></div>
         <div class="streets"></div>
     </div>
+</script>
+
+<script type="text/template" id="visitors-template">
+    <% if (visitors.length){ %>
+        <div class="cap">
+            Visitors: <%=visitors.length%>
+        </div>
+
+        <% _.each(visitors, function(visitor, i){ %>
+            <div class="visitor" data-index="<%=i%>">
+                <%=visitor.name%><%=(i < visitors.length - 1 ? ', ' : '')%>
+            </div>
+        <% }); %>
+    <% } %>
 </script>
