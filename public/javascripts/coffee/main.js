@@ -113,7 +113,7 @@
     }
 
     WorldClock.prototype.tick = function(set_timeout) {
-      var _ref,
+      var onetick,
         _this = this;
       if (set_timeout == null) {
         set_timeout = true;
@@ -123,11 +123,10 @@
         if (this.timeout) {
           clearTimeout(this.timeout);
         }
+        onetick = WorldClock.double_time ? 100 : 1000;
         return this.timeout = setTimeout(function() {
           return _this.tick();
-        }, (_ref = this.double_time) != null ? _ref : {
-          100: 1000
-        });
+        }, onetick);
       }
     };
 
@@ -138,7 +137,7 @@
       if (this.since_epoch < WorldClock.max_seconds) {
         this.second = this.since_epoch;
       } else {
-        this.second = this.since_epoch / WorldClock.max_seconds % WorldClock.max_seconds;
+        this.second = this.since_epoch % WorldClock.max_seconds;
       }
       this.minute = this.since_epoch / WorldClock.seconds_in_minute % WorldClock.max_minutes;
       this.hour = this.since_epoch / WorldClock.seconds_in_hour % WorldClock.max_hours;
@@ -187,7 +186,6 @@
       }
       m = Math.floor(this.minute);
       if (format) {
-        m += 1;
         if (m < 10) {
           return '0' + m.toString();
         } else {
@@ -1216,7 +1214,7 @@
       this.timeout = null;
       return this.timeout = setInterval(function() {
         return _this.update();
-      }, 60000 / 30);
+      }, 60000 / 60);
     };
 
     ModTownGame.prototype.pause = function(resume_in) {

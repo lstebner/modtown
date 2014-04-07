@@ -30,9 +30,14 @@ class WorldClock
         if set_timeout
             clearTimeout(@timeout) if @timeout
 
+            onetick = if WorldClock.double_time
+                100
+            else
+                1000
+
             @timeout = setTimeout =>
                 @tick()
-            , (@double_time ? 100 : 1000)
+            , onetick
 
     sync: ->
         #sync with a real server
@@ -43,7 +48,7 @@ class WorldClock
         if @since_epoch < WorldClock.max_seconds
             @second = @since_epoch
         else 
-            @second = @since_epoch / WorldClock.max_seconds % WorldClock.max_seconds
+            @second = @since_epoch  % WorldClock.max_seconds
         @minute = @since_epoch / WorldClock.seconds_in_minute % WorldClock.max_minutes
         @hour = @since_epoch / WorldClock.seconds_in_hour % WorldClock.max_hours
         @day = Math.floor @since_epoch / WorldClock.seconds_in_day
@@ -77,7 +82,6 @@ class WorldClock
         m = Math.floor @minute
 
         if format
-            m += 1
             if m < 10
                 '0' + m.toString()
             else
