@@ -30,8 +30,9 @@ class FloatingMenu extends RenderedObject
 
             if $el.is('[data-action=cancel]')
                 @close()
+                return @trigger 'cancel'
 
-            @trigger $el.data('action')
+            @trigger 'item_selected', $el.data('action')
 
     get_view_data: ->
         {
@@ -55,8 +56,8 @@ class FloatingMenu extends RenderedObject
             top: y
             left: x
 
-    trigger: (event_name) ->
-        @container.trigger 'item_selected', event_name
+    trigger: (event_name='item_selected', value) ->
+        @container.trigger event_name, value
 
 
 World.FloatingMenu = FloatingMenu

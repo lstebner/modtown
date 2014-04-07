@@ -81,6 +81,9 @@
   border-color: #888;
   cursor: pointer;
 }
+.town .blocks .block .body {
+  margin: 12px;
+}
 #hud {
   position: fixed;
   top: 0;

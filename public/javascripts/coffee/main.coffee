@@ -7,6 +7,7 @@
 # @codekit-prepend "class/WorldClock.coffee"
 # @codekit-prepend "class/RenderedObject.coffee"
 # @codekit-prepend "class/FloatingMenu.coffee"
+# @codekit-prepend "class/FloatingMenus.coffee"
 # @codekit-prepend "class/Alert.coffee"
 # @codekit-prepend "class/HUD.coffee"
 # @codekit-prepend "class/StateManager.coffee"
