@@ -3,6 +3,7 @@
 
 # Classes
 # @codekit-prepend "class/Calendar.coffee"
+# @codekit-prepend "class/Timer.coffee"
 # @codekit-prepend "class/WorldClock.coffee"
 # @codekit-prepend "class/RenderedObject.coffee"
 # @codekit-prepend "class/Alert.coffee"

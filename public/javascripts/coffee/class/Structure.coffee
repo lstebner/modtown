@@ -13,6 +13,7 @@ class Structure extends RenderedObject
         @construction_time = @opts.construction_time
         @construction_time_remaining = 0
         @construction_started = null
+        @construction_timer = null
         @built = false
 
         @construction_tmpl = _.template $('#structure-under-construction-template').html()
@@ -22,7 +23,7 @@ class Structure extends RenderedObject
     default_opts: ->
         _.extend
             begin_construction: true
-            construction_time: Time.in_millis 1, 'minutes'    
+            construction_time: WorldClock.get_duration 1, 'minutes'
         , super
 
     update: ->
@@ -33,15 +34,19 @@ class Structure extends RenderedObject
         @state.update()
 
     progress_construction: ->
-        @construction_time_remaining = @construction_time - (Time.now() - @construction_started)
+        return unless @construction_timer
+        @construction_time_remaining = @construction_timer.remaining()
+        # @construction_time_remaining = @construction_time - (Time.now() - @construction_started)
 
-        @finish_construction() if @construction_time_remaining < 0
+        # @finish_construction() if @construction_time_remaining < 0
 
     begin_construction: ->
         @change_state 'under_construction'
 
-        @construction_time_remaining = @construction_time
-        @construction_started = Time.now()
+        @construction_timer = World.game.clock.create_timer @construction_time, =>
+            @finish_construction()
+        @construction_time_remaining = @construction_timer.remaining()
+        @construction_started = World.game.clock.now()
         @built = false
 
     finish_construction: ->
@@ -55,8 +60,8 @@ class Structure extends RenderedObject
             when 'under_construction'
                 vdata =
                     construction_time: @construction_time
-                    construction_time_remaining: @construction_time_remaining
-                    construction_percent_complete: @construction_time_remaining / @construction_time
+                    construction_time_remaining: @construction_timer.remaining()
+                    construction_percent_complete: @construction_timer.remaining_percent()
                     construction_time_nice: moment.duration(@construction_time_remaining, 'milliseconds').humanize()
 
             else

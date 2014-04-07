@@ -1,6 +1,6 @@
 class Farm extends Structure
     begin_construction: ->
-        @construction_time = Time.in_millis 5, 'minutes'
+        @construction_time = WorldClock.get_duration 5, 'minutes'
 
         super
 
