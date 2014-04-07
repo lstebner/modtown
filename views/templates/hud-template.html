@@ -9,6 +9,7 @@
             <%=clock.get_time('h:m:s')%>
         </li>
         <li>Funds: $<%=town.balance%></li>
+        <li>Occupancy: <%=Math.round(town.occupancy_percent * 100)%>%</li>
     </ul>
 
     <h1><%=town.name%></h1>

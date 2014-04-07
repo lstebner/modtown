@@ -1,6 +1,8 @@
 <script type="text/template" id="housing-template">
     <div class="housing">
         Housing <br />
-        Occupancy: <%=structure.occupants%> / <%=structure.max_occupants%> (<%=Math.round(structure.occupancy_percent() * 100)%>%)
+        <% if (structure){ %>
+            Occupancy: <%=structure.occupants%> / <%=structure.max_occupants%> (<%=Math.round(structure.occupancy_percent() * 100)%>%)
+        <% } %>
     </div>
 </script>

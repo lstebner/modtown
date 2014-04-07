@@ -18,6 +18,7 @@ class Town extends RenderedObject
         @year = 0
         @balance = @opts.balance
         @spent = 0
+        @occupancy_percent = 0
 
         @next_street_id = 0
         @next_resident_id = 0
@@ -31,6 +32,7 @@ class Town extends RenderedObject
         @block_ids_to_index = {}
         @structures = []
         @structure_ids_to_index = {}
+        @structures_by_type = {}
 
     template_id: ->
         '#town-template'
@@ -46,6 +48,8 @@ class Town extends RenderedObject
 
         for r in @residents
             r.update(clock)
+
+        @get_occupancy_percent()
 
     _street_id: ->
         @next_street_id += 1
@@ -120,6 +124,16 @@ class Town extends RenderedObject
     funds_available: (how_much=0) ->
         (@balance - how_much) >= 0
 
+    get_occupancy_percent: ->
+        return unless _.has @structures_by_type, 'housing'
+        structure_ids = @structures_by_type['housing']
+        total = 0
+
+        for idx in structure_ids
+            total += @structures[idx]?.occupancy_percent()
+
+        @occupancy_percent = total / structure_ids.length
+
     build_structure: (type, street_id, block_id) ->
         if !_.has(Block.costs, type)
             return throw('Bad type')
@@ -139,6 +153,11 @@ class Town extends RenderedObject
 
         @structures.push(new_structure)
         @structure_ids_to_index[new_structure.id] = @structures.length - 1
+
+        if !_.has @structures_by_type, type
+            @structures_by_type[type] = []
+
+        @structures_by_type[type].push(@structures.length - 1)
 
         new_structure
 

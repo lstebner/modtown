@@ -746,6 +746,7 @@
       this.year = 0;
       this.balance = this.opts.balance;
       this.spent = 0;
+      this.occupancy_percent = 0;
       this.next_street_id = 0;
       this.next_resident_id = 0;
       this.streets = [];
@@ -757,6 +758,7 @@
       this.block_ids_to_index = {};
       this.structures = [];
       this.structure_ids_to_index = {};
+      this.structures_by_type = {};
     }
 
     Town.prototype.template_id = function() {
@@ -769,19 +771,18 @@
     };
 
     Town.prototype.update = function(clock) {
-      var r, s, _i, _j, _len, _len1, _ref1, _ref2, _results;
+      var r, s, _i, _j, _len, _len1, _ref1, _ref2;
       _ref1 = this.streets;
       for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
         s = _ref1[_i];
         s.update(clock);
       }
       _ref2 = this.residents;
-      _results = [];
       for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
         r = _ref2[_j];
-        _results.push(r.update(clock));
+        r.update(clock);
       }
-      return _results;
+      return this.get_occupancy_percent();
     };
 
     Town.prototype._street_id = function() {
@@ -896,6 +897,20 @@
       return (this.balance - how_much) >= 0;
     };
 
+    Town.prototype.get_occupancy_percent = function() {
+      var idx, structure_ids, total, _i, _len, _ref1;
+      if (!_.has(this.structures_by_type, 'housing')) {
+        return;
+      }
+      structure_ids = this.structures_by_type['housing'];
+      total = 0;
+      for (_i = 0, _len = structure_ids.length; _i < _len; _i++) {
+        idx = structure_ids[_i];
+        total += (_ref1 = this.structures[idx]) != null ? _ref1.occupancy_percent() : void 0;
+      }
+      return this.occupancy_percent = total / structure_ids.length;
+    };
+
     Town.prototype.build_structure = function(type, street_id, block_id) {
       var new_structure;
       if (!_.has(Block.costs, type)) {
@@ -916,6 +931,10 @@
       }
       this.structures.push(new_structure);
       this.structure_ids_to_index[new_structure.id] = this.structures.length - 1;
+      if (!_.has(this.structures_by_type, type)) {
+        this.structures_by_type[type] = [];
+      }
+      this.structures_by_type[type].push(this.structures.length - 1);
       return new_structure;
     };
 
