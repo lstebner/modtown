@@ -53,7 +53,7 @@ Rules
 
 ## Static Methods
 
-#### get_duration (amount, of_what='seconds')
+#### duration (amount, of_what='seconds')
 
 Get a duration of time from the World Clock. This is important to use when setting Timer's so that they tick in relation to world time (which can be sped up or slowed down this way).
 

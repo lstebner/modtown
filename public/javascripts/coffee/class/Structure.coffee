@@ -18,16 +18,17 @@ class Structure extends RenderedObject
 
         @construction_tmpl = _.template $('#structure-under-construction-template').html()
 
-        @begin_construction() if @opts.begin_construction
+        @change_state('begin_construction') if @opts.begin_construction
 
     default_opts: ->
         _.extend
             begin_construction: true
-            construction_time: WorldClock.get_duration 1, 'minutes'
+            construction_time: WorldClock.duration 1, 'minutes'
         , super
 
-    update: ->
+    update: (clock) ->
         switch @state.current()
+            when 'begin_construction' then @begin_construction(clock)
             when 'under_construction' then @progress_construction()
             when 'operating' then @operating()
 
@@ -40,10 +41,10 @@ class Structure extends RenderedObject
 
         # @finish_construction() if @construction_time_remaining < 0
 
-    begin_construction: ->
+    begin_construction: (clock) ->
         @change_state 'under_construction'
 
-        @construction_timer = World.game.clock.create_timer @construction_time, =>
+        @construction_timer = clock.create_timer @construction_time, =>
             @finish_construction()
         @construction_time_remaining = @construction_timer.remaining()
         @construction_started = World.game.clock.now()

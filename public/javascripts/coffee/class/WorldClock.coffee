@@ -1,6 +1,6 @@
 class WorldClock
     #this flag can be used to speed up the clock for testing
-    @double_time: false
+    @double_time: true
 
     @max_seconds: 60
     @max_minutes: 60
@@ -13,7 +13,7 @@ class WorldClock
     @seconds_in_month: WorldClock.seconds_in_day * WorldClock.max_days
     @seconds_in_year: WorldClock.seconds_in_month * WorldClock.max_months
 
-    @get_duration: (amount, of_what='seconds') ->
+    @duration: (amount, of_what='seconds') ->
         in_seconds = 0
 
         switch of_what
@@ -45,7 +45,7 @@ class WorldClock
             clearTimeout(@timeout) if @timeout
 
             onetick = if WorldClock.double_time
-                100
+                10
             else
                 1000
 
@@ -77,6 +77,24 @@ class WorldClock
 
     now: ->
         @get_time()
+
+    since_midnight: ->
+        @now() % WorldClock.seconds_in_day
+
+    is_morning: ->
+        @since_midnight() < WorldClock.duration('3', 'hours')
+
+    is_night: ->
+        @since_midnight() > WorldClock.duration('7', 'hours')
+
+    is_afternoon: ->
+        !@is_morning() && !@is_night()
+
+    is_am: ->
+        @since_midnight() < WorldClock.max_hours / 2
+
+    is_pm: ->
+        !@is_am()
 
     get_time: (format=null) ->
         return @since_epoch if !format

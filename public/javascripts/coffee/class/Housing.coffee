@@ -8,7 +8,7 @@ class Housing extends Structure
         @residents = []
 
     begin_construction: ->
-        @construction_time = WorldClock.get_duration(10, 'seconds')
+        @construction_time = WorldClock.duration(10, 'seconds')
         super
 
     has_vacancy: ->
