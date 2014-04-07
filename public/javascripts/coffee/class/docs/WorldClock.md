@@ -49,7 +49,18 @@ Rules
 - month: default `0` | The current month of the tick
 - year: default `0` | The current year of the tick
 - timeout: default `null` | The timeout for ticking
+- timers: default `[]` | Any active timers the clock is currently managing
 
+## Static Methods
+
+#### get_duration (amount, of_what='seconds')
+
+Get a duration of time from the World Clock. This is important to use when setting Timer's so that they tick in relation to world time (which can be sped up or slowed down this way).
+
+- amount: The int value of whatever your duration is
+- of_what: default `seconds` | The metric you're trying to get
+
+This method takes `amount` and multipies it by the `WorldClock.seconds_in_[of_what]` where `of_what` is what you pass. 
 
 ## Methods
 
@@ -70,6 +81,12 @@ Sync with the global time server. Not implemented!
 #### update
 
 This method is called by tick to increment time and update all related values to "now". Does not need to be called externally.
+
+This method automatically calls `update_timers()`.
+
+#### now
+
+Convenience method for the number of ticks that represent now.
 
 #### get_time (format=null)
 
@@ -122,3 +139,10 @@ Get the current year as a 1-based value.
 #### get_month
 
 Get the current month as a string. 
+
+#### create_timer (duration=0, on_complete=null)
+
+Creates a new timer which will automatically be ticked on update. You should pass `on_complete` as a method to be called when the timer goes off, though the new timer is also returned.
+
+- duration: default `0` | How long the timer should last. Use the `WorldClock.duration` static method to get an accurate value. 
+- on_complete: default `null` | A callback method for when the timer goes off.

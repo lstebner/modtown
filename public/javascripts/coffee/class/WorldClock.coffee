@@ -1,6 +1,6 @@
 class WorldClock
     #this flag can be used to speed up the clock for testing
-    @double_time: true
+    @double_time: false
 
     @max_seconds: 60
     @max_minutes: 60
@@ -13,6 +13,19 @@ class WorldClock
     @seconds_in_month: WorldClock.seconds_in_day * WorldClock.max_days
     @seconds_in_year: WorldClock.seconds_in_month * WorldClock.max_months
 
+    @get_duration: (amount, of_what='seconds') ->
+        in_seconds = 0
+
+        switch of_what
+            when 'seconds' || 's' then in_seconds = amount
+            when 'minutes' || 'm' then in_seconds = amount * WorldClock.seconds_in_minute
+            when 'hours' || 'h' then in_seconds = amount * WorldClock.seconds_in_hour
+            when 'days' || 'd' then in_seconds = amount * WorldClock.seconds_in_day
+            when 'months' || 'mo' then in_seconds = amount * WorldClock.seconds_in_month
+            when 'years' || 'y' then in_seconds = amount * WorldClock.seconds_in_year
+
+        in_seconds
+
     constructor: ->
         @since_epoch = 0
         @second = 0
@@ -23,6 +36,7 @@ class WorldClock
         @year = 0
 
         @timeout = null
+        @timers = []
 
     tick: (set_timeout=true)->
         @update()
@@ -54,6 +68,15 @@ class WorldClock
         @day = Math.floor @since_epoch / WorldClock.seconds_in_day
         @month = Math.floor @since_epoch / WorldClock.seconds_in_month
         @year = Math.floor @since_epoch / WorldClock.seconds_in_year
+
+        @update_timers()
+
+    update_timers: ->
+        for timer in @timers
+            timer.tick()
+
+    now: ->
+        @get_time()
 
     get_time: (format=null) ->
         return @since_epoch if !format
@@ -107,5 +130,11 @@ class WorldClock
 
     get_month: ->
         Calendar.get_month @month
+
+    create_timer: (duration=0, on_complete=null) ->
+        new_timer = new Timer duration, on_complete
+        @timers.push new_timer
+
+        new_timer
 
 World.WorldClock = WorldClock
