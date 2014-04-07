@@ -188,17 +188,12 @@ class Town extends RenderedObject
                 when 'build_structure' then @build_structure $el.data('value'), $el.closest('.street').data('id'), $el.closest('.block').data('id')
                 when 'add_block' then @create_block $el.closest('.street').data('id')
                 when 'launch_build_menu' 
-                    build_menu = new BuildMenu()
-                    block_id = $el.closest('.block').data('id')
-                    street_id = $el.closest('.street').data('id')
-                    build_menu.open()
+                    build_menu = new BuildMenu null, 
+                        block_id: $el.closest('.block').data('id')
+                        street_id: $el.closest('.street').data('id')
+                        town: @
+                        open: true
 
                     build_menu.container.one 'item_selected', (e, selection) =>
-                        switch selection
-                            when 'build_farm' then @build_structure 'farm', street_id, block_id
-                            when 'build_factory' then @build_structure 'factory', street_id, block_id
-                            when 'build_housing' then @build_structure 'housing', street_id, block_id
-
-                        build_menu.destroy()
                         $el.hide()
 
