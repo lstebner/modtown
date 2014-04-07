@@ -28,7 +28,7 @@ class Street extends RenderedObject
         for b in @blocks
             b.render()
 
-    update: ->
+    update: (clock) ->
         switch @state.current()
             when 'setup'
                 @setup_blocks()
@@ -36,7 +36,7 @@ class Street extends RenderedObject
 
             when 'running'
                 for b in @blocks
-                    b.update()
+                    b.update(clock)
 
         @state.update()
 

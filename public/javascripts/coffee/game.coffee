@@ -24,7 +24,7 @@ class ModTownGame extends RenderedObject
     setup_town: ->
         town_opts = 
             name: 'AhhsumTown'
-            balance: 200
+            balance: 1000
 
         @town = new Town @container.find('#town'), town_opts
 
@@ -40,7 +40,7 @@ class ModTownGame extends RenderedObject
         #change to setInterval to make repeat forever
         @timeout = setInterval =>
             @update()
-        , 60000 / 30
+        , 60000 / 60
 
     pause: (resume_in=null) ->
         clearInterval(@timeout) if @timeout
@@ -56,7 +56,7 @@ class ModTownGame extends RenderedObject
     update: ->
         @state.update()
 
-        @town.update()
+        @town.update(@clock)
         @hud.update 
             town: @town
             player: @player

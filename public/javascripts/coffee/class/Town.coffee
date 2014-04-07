@@ -26,6 +26,7 @@ class Town extends RenderedObject
         @street_ids_to_index = {}
         @residents = []
         @resident_ids_to_index = {}
+        @visitors = []
         @blocks = []
         @block_ids_to_index = {}
         @structures = []
@@ -39,9 +40,12 @@ class Town extends RenderedObject
 
         @render_streets()
 
-    update: ->
+    update: (clock) ->
         for s in @streets
-            s.update()
+            s.update(clock)
+
+        for r in @residents
+            r.update(clock)
 
     _street_id: ->
         @next_street_id += 1

@@ -12,8 +12,8 @@ class Block extends RenderedObject
 
         @update()
 
-    update: -> 
-        @structure.update() if @structure
+    update: (clock) -> 
+        @structure.update(clock) if @structure
 
         @set_view_data 'block', { type: @type, structure: @structure }
 
