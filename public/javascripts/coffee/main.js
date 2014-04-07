@@ -731,6 +731,8 @@
       street: 100
     };
 
+    Town.visitor_chance = .15;
+
     Town.prototype.default_opts = function() {
       return _.extend({
         balance: 0
@@ -767,7 +769,8 @@
 
     Town.prototype.render = function() {
       Town.__super__.render.apply(this, arguments);
-      return this.render_streets();
+      this.render_streets();
+      return this.render_visitors();
     };
 
     Town.prototype.update = function(clock) {
@@ -782,7 +785,12 @@
         r = _ref2[_j];
         r.update(clock);
       }
-      return this.get_occupancy_percent();
+      this.get_occupancy_percent();
+      if (this.visitors.length < 12 && this.occupancy_percent < .8 && clock.is_afternoon()) {
+        if (Math.random() < Town.visitor_chance) {
+          return this.visitors.push(this.create_resident());
+        }
+      }
     };
 
     Town.prototype._street_id = function() {
@@ -860,8 +868,7 @@
         props = {};
       }
       props = this._resident_props(props);
-      new_resident = new Resident(null, props);
-      return this.residents.push(new_resident);
+      return new_resident = new Resident(null, props);
     };
 
     Town.prototype.render_streets = function() {
@@ -873,6 +880,22 @@
         _results.push(s.render());
       }
       return _results;
+    };
+
+    Town.prototype.render_visitors = function() {
+      var $visitors, visitors_tmpl;
+      $visitors = this.container.find('.visitors');
+      if (!this.visitors.length) {
+        $visitors.hide();
+        return;
+      } else if (!$visitors.is(':visible')) {
+        $visitors.show();
+      }
+      visitors_tmpl = _.template($('#visitors-template').html());
+      $visitors.empty();
+      return $visitors.html(visitors_tmpl({
+        visitors: this.visitors
+      }));
     };
 
     Town.prototype.add_funds = function(how_much) {
@@ -1178,7 +1201,7 @@
     }
 
     Resident.prototype.setup_stats = function() {
-      this.gender = Math.random() > Resident.gender_weight_male ? 'male' : 'female';
+      this.gender = Math.random() > Resident.gender_weight_male ? 'female' : 'male';
       this.name = Resident.random_name(this.gender);
       this.sleep_schedule = {
         goto_bed: WorldClock.duration('9', 'hours'),
@@ -1545,11 +1568,19 @@
         town: this.town
       });
       return this.hud.container.on('btn_pressed', function(e, action) {
+        var $el;
+        $el = $("[data-action=" + action + "]");
         switch (action) {
           case 'add_street':
             return _this.town.create_street({
               blocks: 1
             });
+          case 'pause':
+            $el.text('Resume').data('action', 'resume');
+            return _this.pause();
+          case 'resume':
+            $el.text('Pause').data('action', 'pause');
+            return _this.resume();
         }
       });
     };

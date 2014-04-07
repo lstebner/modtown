@@ -32,8 +32,18 @@ class ModTownGame extends RenderedObject
         @hud = new HUD @container.find('#hud'), { town: @town }
 
         @hud.container.on 'btn_pressed', (e, action) =>
+            $el = $("[data-action=#{action}]")
+
             switch action
                 when 'add_street' then @town.create_street({ blocks: 1 })
+
+                when 'pause'
+                    $el.text('Resume').data('action', 'resume')
+                    @pause()
+
+                when 'resume'
+                    $el.text('Pause').data('action', 'pause')
+                    @resume()
 
     setup_timeout: ->
         @timeout = null
