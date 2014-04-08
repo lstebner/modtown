@@ -12,8 +12,16 @@
         </div>
 
         <% _.each(visitors, function(visitor, i){ %>
-            <div class="visitor" data-index="<%=i%>">
-                <%=visitor.name%><%=(i < visitors.length - 1 ? ', ' : '')%>
+            <div class="visitor">
+                <%
+                    classes = []
+                    if (selected_visitor && selected_visitor == i){
+                        classes.push('active');
+                    }
+                %>
+                <a class="<%=classes.join(' ')%>" data-action="launch_visitor_menu" data-index="<%=i%>" href="#">
+                    <%=visitor.name%><%=(i < visitors.length - 1 ? ', ' : '')%>
+                </a>
             </div>
         <% }); %>
     <% } %>
