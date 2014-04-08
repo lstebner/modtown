@@ -1,3 +1,15 @@
+_house_ids = "abcdefghijklmnopqrstuvwxyz"
+_house_idx = 0
+_next_house_name = ->
+    letter = _house_ids[_house_idx % _house_ids.length]
+    letters = ""
+    for i in [0...(Math.floor(_house_idx / _house_ids.length) + 1)]
+        letters += letter
+
+    _house_idx += 1
+
+    "Housing Complex #{letters.toUpperCase()}"
+
 class Housing extends Structure
     constructor: ->
         super
@@ -7,18 +19,24 @@ class Housing extends Structure
         @rent_cost = 0
         @residents = []
 
-    begin_construction: ->
-        @construction_time = WorldClock.duration(10, 'seconds')
-        super
+    default_opts: ->
+        _.extend(
+            super,
+            name: _next_house_name()
+        )
 
     has_vacancy: ->
-        @occupants < @max_occupants
+        !@is_under_construction() && @occupants < @max_occupants
 
     occupancy_percent: ->
         @occupants / @max_occupants
 
     vacancy_percent: ->
         (@max_occupants - @occupants) / @max_occupants
+
+    begin_construction: ->
+        @construction_time = WorldClock.duration(10, 'seconds')
+        super
 
     move_resident_in: (resident) ->
         if @occupants == @max_occupants
