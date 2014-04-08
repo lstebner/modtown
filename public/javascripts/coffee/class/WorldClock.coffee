@@ -1,6 +1,5 @@
 class WorldClock
-    #this flag can be used to speed up the clock for testing
-    @double_time: true
+    @time_speedx: 1
 
     @max_seconds: 60
     @max_minutes: 60
@@ -44,10 +43,7 @@ class WorldClock
         if set_timeout
             clearTimeout(@timeout) if @timeout
 
-            onetick = if WorldClock.double_time
-                10
-            else
-                1000
+            onetick = 1000 * WorldClock.time_speedx
 
             @timeout = setTimeout =>
                 @tick()
