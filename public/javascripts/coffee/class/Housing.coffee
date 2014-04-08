@@ -14,7 +14,7 @@ class Housing extends Structure
     constructor: ->
         super
 
-        @max_occupants = 10
+        @max_occupants = 12
         @occupants = 0
         @rent_cost = 0
         @residents = []
@@ -40,6 +40,7 @@ class Housing extends Structure
 
     move_resident_in: (resident) ->
         if @occupants == @max_occupants
+            new ErrorAlert('No vacancy!').delayed_dismiss()
             return throw('Max occupants in housing')
 
         @occupants += 1
@@ -65,6 +66,7 @@ class Housing extends Structure
             when 'operating'
                 vdata = 
                     structure: @
+                    occupants: @residents
 
         vdata
 
