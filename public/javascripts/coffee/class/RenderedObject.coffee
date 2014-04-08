@@ -22,7 +22,6 @@ class RenderedObject
 
     default_opts: ->
         {
-            id: 0
             name: ''
             render: false
         }
