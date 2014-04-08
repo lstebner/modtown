@@ -66,11 +66,13 @@ class FloatingMenu extends RenderedObject
 
     set_items: (new_items) ->
         @items = new_items
+        @set_view_data 'items', @items
         @render()
         @container.trigger('items_changed')
 
     set_title: (new_title) ->
         @title = new_title
+        @set_view_data 'title', @title
         @render()
         @container.trigger('title_changed')
 

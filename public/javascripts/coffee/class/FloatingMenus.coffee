@@ -124,9 +124,9 @@ class ResidentMenu extends FloatingMenu
         @resident = @opts.resident
         @set_title @resident.name
 
-        console.log @resident.name
+        @view_data = @get_view_data()
 
-        @render()
+        @render(true)
 
     default_opts: ->
         _.extend(

@@ -579,12 +579,14 @@
 
     FloatingMenu.prototype.set_items = function(new_items) {
       this.items = new_items;
+      this.set_view_data('items', this.items);
       this.render();
       return this.container.trigger('items_changed');
     };
 
     FloatingMenu.prototype.set_title = function(new_title) {
       this.title = new_title;
+      this.set_view_data('title', this.title);
       this.render();
       return this.container.trigger('title_changed');
     };
@@ -822,8 +824,8 @@
       ResidentMenu.__super__.constructor.apply(this, arguments);
       this.resident = this.opts.resident;
       this.set_title(this.resident.name);
-      console.log(this.resident.name);
-      this.render();
+      this.view_data = this.get_view_data();
+      this.render(true);
     }
 
     ResidentMenu.prototype.default_opts = function() {
