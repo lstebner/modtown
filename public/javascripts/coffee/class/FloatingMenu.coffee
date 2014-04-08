@@ -44,10 +44,11 @@ class FloatingMenu extends RenderedObject
             @trigger 'item_selected', $el.data('action')
 
     get_view_data: ->
-        {
+        _.extend(
+            super,
             title: @title
             items: @items
-        }
+        )
 
     #close the menu
     close: ->
@@ -62,6 +63,16 @@ class FloatingMenu extends RenderedObject
     destroy: ->
         @container.trigger('destroy').hide()
         @container.unbind().remove()
+
+    set_items: (new_items) ->
+        @items = new_items
+        @render()
+        @container.trigger('items_changed')
+
+    set_title: (new_title) ->
+        @title = new_title
+        @render()
+        @container.trigger('title_changed')
 
     #move the menu to a certain position
     set_position: (x, y) ->
