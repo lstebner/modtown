@@ -38,9 +38,9 @@ class Structure extends RenderedObject
     progress_construction: ->
         return unless @construction_timer
         @construction_time_remaining = @construction_timer.remaining()
-        # @construction_time_remaining = @construction_time - (Time.now() - @construction_started)
 
-        # @finish_construction() if @construction_time_remaining < 0
+    is_under_construction: ->
+        @state.current() == 'under_construction'
 
     begin_construction: (clock) ->
         @change_state 'under_construction'
