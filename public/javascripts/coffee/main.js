@@ -726,7 +726,22 @@
         return;
       }
       this.select_house_menu.open();
-      return this.select_house_menu.container.one('house_selected', function() {});
+      return this.select_house_menu.container.one('house_selected', function(e, house_id) {
+        var house, _i, _len, _ref, _results;
+        house_id = parseInt(house_id.replace("house_", ""));
+        _ref = _this.housing;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          house = _ref[_i];
+          if (house.id === house_id) {
+            _this.town.convert_visitor_to_resident(_this.visitor.id);
+            _results.push(house.move_resident_in(_this.visitor));
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
+      });
     };
 
     VisitorMenu.prototype.kick_out_of_town = function() {
@@ -1224,6 +1239,16 @@
         }
       }
       return this.visitors = visitors_cleaned;
+    };
+
+    Town.prototype.convert_visitor_to_resident = function(visitor_id) {
+      var visitor;
+      visitor = this.get_visitor(visitor_id, true);
+      if (!visitor) {
+        return;
+      }
+      this.residents.push(visitor);
+      return this.remove_visitor(visitor_id);
     };
 
     Town.prototype.render_streets = function() {

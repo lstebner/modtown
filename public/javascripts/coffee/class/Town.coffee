@@ -142,6 +142,13 @@ class Town extends RenderedObject
 
         @visitors = visitors_cleaned
 
+    convert_visitor_to_resident: (visitor_id) ->
+        visitor = @get_visitor visitor_id, true
+        return unless visitor
+
+        @residents.push visitor
+        @remove_visitor visitor_id
+
     render_streets: ->
         for s in @streets
             s.render()

@@ -71,7 +71,12 @@ class VisitorMenu extends FloatingMenu
 
         @select_house_menu.open()
 
-        @select_house_menu.container.one 'house_selected', =>
+        @select_house_menu.container.one 'house_selected', (e, house_id) =>
+            house_id = parseInt house_id.replace("house_", "")
+            for house in @housing
+                if house.id == house_id
+                    @town.convert_visitor_to_resident @visitor.id
+                    house.move_resident_in @visitor
 
 
     kick_out_of_town: ->
