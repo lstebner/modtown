@@ -5,8 +5,12 @@ class HUD extends RenderedObject
     update: (@view_data={}) ->
 
     setup_events: ->
-        @container.on 'click', '.btn', (e) =>
-            @container.trigger 'btn_pressed', $(e.target).data('action')
+        @container.on 'click', (e) =>
+            e.preventDefault()
+            $el = $(e.target)
+
+            if $el.is('.btn')
+                @container.trigger 'btn_pressed', $el.data('action')
 
     render: ->
         super
