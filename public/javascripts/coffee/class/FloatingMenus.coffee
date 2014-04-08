@@ -117,5 +117,24 @@ class SelectHouseMenu extends FloatingMenu
 
         @destroy()
 
+class ResidentMenu extends FloatingMenu
+    constructor: ->
+        super
 
+        @resident = @opts.resident
+        @set_title @resident.name
+
+        console.log @resident.name
+
+        @render()
+
+    default_opts: ->
+        _.extend(
+            super,
+            resident: null
+            items: 
+                show_stats: 'Show Stats'
+                assign_job: 'Assign Job'
+                evict: 'Evict'
+        )
 
