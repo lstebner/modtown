@@ -129,7 +129,7 @@
   top: 30%;
   left: 40%;
   width: 240px;
-  height: 320px;
+  height: auto;
   border: 1px solid #d8d8d8;
   -moz-box-shadow: 0 0 10px #d8d8d8;
   -webkit-box-shadow: 0 0 10px #d8d8d8;
@@ -179,6 +179,9 @@
 .visitors .visitor {
   display: inline-block;
 }
+.visitors .visitor a.active {
+  background-color: #ff9;
+}
 body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 13px;
@@ -203,4 +206,11 @@ ul.unstyled {
   list-style-type: none;
   padding: 0;
   margin: 0;
+}
+a {
+  color: #2a3c50;
+  text-decoration: none;
+}
+a:hover {
+  color: #4d6e93;
 }
