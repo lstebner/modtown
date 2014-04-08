@@ -7,7 +7,11 @@
             <% if (occupants.length){ %>
                 <ul class="occupants unstyled">
                     <% _.each(occupants, function(occupant){ %>
-                        <li><%=occupant.name%></li>
+                        <li>
+                            <a href="#" data-action="launch_resident_menu" data-id="<%=occupant.id%>">
+                                <%=occupant.name%>
+                            </a>
+                        </li>
                     <% }); %>
                 </ul>
             <% } %>
