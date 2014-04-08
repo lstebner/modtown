@@ -49,17 +49,17 @@ class FloatingMenu extends RenderedObject
 
     #close the menu
     close: ->
-        @container.hide()
+        @container.hide().trigger('close')
 
     #open the menu
     open: ->
         @render(true)
-        @container.show()
+        @container.show().trigger('open')
 
     #close, unbind and remove the menu
     destroy: ->
-        @container.unbind()
-        @container.remove()
+        @container.trigger('destroy').hide()
+        @container.unbind().remove()
 
     #move the menu to a certain position
     set_position: (x, y) ->
