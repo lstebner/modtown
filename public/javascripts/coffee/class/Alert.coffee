@@ -6,6 +6,13 @@ class Alert
         @render()
         @setup_events()
 
+        @
+
+    delayed_dismiss: (millis=3000) ->
+        setTimeout =>
+            @dismiss()
+        , millis
+
     setup_events: ->
         @container.on 'click', (e) =>
             e.preventDefault()
