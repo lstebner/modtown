@@ -240,6 +240,17 @@ class Town extends RenderedObject
                     visitor_menu.container.one 'destroy', =>
                         @selected_visitor = null
 
+    get_housing: (only_vacant=false) ->
+        return unless _.has @structures_by_type, 'housing'
+        housing = @structures_by_type['housing']
+        results = []
+
+        for h in housing
+            s = @structures[h]
+            results.push(s) if !only_vacant || s.has_vacancy()
+
+        results
+
 
 
 

@@ -37,7 +37,9 @@ class VisitorMenu extends FloatingMenu
 
         @visitor = @opts.visitor
         @town = @opts.town
-        @select_house_menu = null
+        @housing = @town.get_housing()
+
+        @setup_house_menu()
 
     default_opts: ->
         _.extend(
@@ -49,6 +51,10 @@ class VisitorMenu extends FloatingMenu
                 move_in: "Move In"
                 kick_out: "Kick Out"
         )
+
+    setup_house_menu: ->
+        @select_house_menu = new SelectHouseMenu null, 
+            housing: @housing
 
     trigger: (event_name='item_selected', value=null) ->
         super
@@ -63,10 +69,10 @@ class VisitorMenu extends FloatingMenu
     move_in_to_town: ->
         return unless @town && @visitor
 
-        @select_house_menu = new SelectHouseMenu null, 
-            town: @town
-            visitor: @visitor
-            open: true
+        @select_house_menu.open()
+
+        @select_house_menu.container.one 'house_selected', =>
+
 
     kick_out_of_town: ->
         return unless @town && @visitor
@@ -77,16 +83,34 @@ class SelectHouseMenu extends FloatingMenu
     constructor: ->
         super
 
-        @town = @opts.town
-        @visitor = @opts.visitor
+        @housing = @opts.housing
+
+        @setup_items()
+
+    setup_items: ->
+        return unless @housing
+
+        @items = {}
+
+        for house in @housing
+            @items["house_#{house.id}"] = house.name
+
+        @render(true)
 
     default_opts: ->
         _.extend(
             super,
-            town: null
-            visitor: null
             title: 'Select Home'
+            housing: []
         )
+
+    trigger: (event_name='item_selected', value=null) ->
+        super
+
+        if event_name == 'item_selected'
+            @trigger 'house_selected', value
+
+        @destroy()
 
 
 
