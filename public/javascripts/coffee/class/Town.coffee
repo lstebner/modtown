@@ -1,7 +1,9 @@
 class Town extends RenderedObject
     @costs: 
         street: 100
-    @visitor_chance: .15
+    @extra_visitors: true
+    @visitor_chance: if Town.extra_visitors then .75 else .15
+    @visitors_all_day: true
 
     default_opts: ->
         _.extend(
@@ -30,6 +32,7 @@ class Town extends RenderedObject
         @residents = []
         @resident_ids_to_index = {}
         @visitors = []
+        @selected_visitor = 0
         @blocks = []
         @block_ids_to_index = {}
         @structures = []
@@ -54,9 +57,9 @@ class Town extends RenderedObject
 
         @get_occupancy_percent()
 
-        if @visitors.length < 12 && @occupancy_percent < .8 && clock.is_afternoon()
+        if @visitors.length < 12 && @occupancy_percent < .8 && (Town.visitors_all_day || clock.is_afternoon())
             if Math.random() < Town.visitor_chance
-                @visitors.push @create_resident()
+                @create_visitor()
 
     _street_id: ->
         @next_street_id += 1
@@ -110,9 +113,34 @@ class Town extends RenderedObject
             name: 'Mr Resident'
         , props
 
-    create_resident: (props={}) ->
+    #get a visitor
+    #by default just looks up by index, but if `is_id` is
+    #passed as true, it looks up by id property
+    get_visitor: (id=0, is_id=false) ->
+        if is_id
+            for v in @visitors
+                if v.id == id
+                    return v
+        else
+            if _.has @visitors, id
+                @visitors[id]
+            else
+                false
+
+    create_visitor: (props={}) ->
         props = @_resident_props props
         new_resident = new Resident null, props
+        @visitors.push new_resident
+
+        new_resident
+
+    remove_visitor: (id) ->
+        visitors_cleaned = []
+
+        for v in @visitors
+            visitors_cleaned.push(v) if v.id != id
+
+        @visitors = visitors_cleaned
 
     render_streets: ->
         for s in @streets
@@ -129,7 +157,7 @@ class Town extends RenderedObject
 
         visitors_tmpl = _.template $('#visitors-template').html()
         $visitors.empty()
-        $visitors.html visitors_tmpl { visitors: @visitors }
+        $visitors.html visitors_tmpl { visitors: @visitors, selected_visitor: @selected_visitor }
 
     add_funds: (how_much=0) ->
         #todo: verify transaction?
@@ -199,4 +227,21 @@ class Town extends RenderedObject
 
                     build_menu.container.one 'item_selected', (e, selection) =>
                         $el.hide()
+                when 'launch_visitor_menu'
+                    $el.addClass('active')
+                    @selected_visitor = $el.data('index')
+                    visitor_menu = new VisitorMenu null,
+                        town: @
+                        visitor: @get_visitor $el.data('index'), false
+                        open: true
+
+                    visitor_menu.best_position_for e.clientX, e.clientY
+
+                    visitor_menu.container.one 'destroy', =>
+                        @selected_visitor = null
+
+
+
+
+
 
