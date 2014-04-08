@@ -171,6 +171,16 @@
 .floating-menu .body ul li:last-child {
   margin-bottom: 0;
 }
+.structure .housing .occupants {
+  border-top: 1px solid #d8d8d8;
+  padding: 8px;
+  margin-top: 8px;
+}
+.structure .housing .occupants li {
+  float: left;
+  display: block;
+  width: 45%;
+}
 .visitors {
   border: 1px solid #d8d8d8;
   padding: 16px 20px;

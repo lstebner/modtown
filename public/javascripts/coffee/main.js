@@ -167,7 +167,7 @@
 
 
   WorldClock = (function() {
-    WorldClock.double_time = true;
+    WorldClock.time_speedx = 1;
 
     WorldClock.max_seconds = 60;
 
@@ -240,7 +240,7 @@
         if (this.timeout) {
           clearTimeout(this.timeout);
         }
-        onetick = WorldClock.double_time ? 10 : 1000;
+        onetick = 1000 * WorldClock.time_speedx;
         return this.timeout = setTimeout(function() {
           return _this.tick();
         }, onetick);
@@ -817,7 +817,18 @@
       this.dismissed = false;
       this.render();
       this.setup_events();
+      this;
     }
+
+    Alert.prototype.delayed_dismiss = function(millis) {
+      var _this = this;
+      if (millis == null) {
+        millis = 3000;
+      }
+      return setTimeout(function() {
+        return _this.dismiss();
+      }, millis);
+    };
 
     Alert.prototype.setup_events = function() {
       var _this = this;
@@ -1879,7 +1890,7 @@
 
     function Housing() {
       Housing.__super__.constructor.apply(this, arguments);
-      this.max_occupants = 10;
+      this.max_occupants = 12;
       this.occupants = 0;
       this.rent_cost = 0;
       this.residents = [];
@@ -1910,6 +1921,7 @@
 
     Housing.prototype.move_resident_in = function(resident) {
       if (this.occupants === this.max_occupants) {
+        new ErrorAlert('No vacancy!').delayed_dismiss();
         throw 'Max occupants in housing';
       }
       this.occupants += 1;
@@ -1942,7 +1954,8 @@
           break;
         case 'operating':
           vdata = {
-            structure: this
+            structure: this,
+            occupants: this.residents
           };
       }
       return vdata;
