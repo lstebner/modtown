@@ -50,7 +50,7 @@ class ModTownGame extends RenderedObject
         #change to setInterval to make repeat forever
         @timeout = setInterval =>
             @update()
-        , 60000 / 60
+        , 60000 / 30
 
     pause: (resume_in=null) ->
         clearInterval(@timeout) if @timeout
