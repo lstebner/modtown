@@ -39,6 +39,8 @@ class FloatingMenu extends RenderedObject
                 @close()
                 return @trigger 'cancel'
 
+            return if $el.data('disabled')
+
             @trigger 'item_selected', $el.data('action')
 
     get_view_data: ->
