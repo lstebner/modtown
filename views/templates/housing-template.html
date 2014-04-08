@@ -3,6 +3,14 @@
         <% if (structure){ %>
             <h3><%=structure.name%></h3>
             Occupancy: <%=structure.occupants%> / <%=structure.max_occupants%> (<%=Math.round(structure.occupancy_percent() * 100)%>%)
+
+            <% if (occupants.length){ %>
+                <ul class="occupants unstyled">
+                    <% _.each(occupants, function(occupant){ %>
+                        <li><%=occupant.name%></li>
+                    <% }); %>
+                </ul>
+            <% } %>
         <% } else { %>
             Housing (not yet built)
         <% } %>
