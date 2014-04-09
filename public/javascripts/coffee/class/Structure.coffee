@@ -15,6 +15,8 @@ class Structure extends RenderedObject
         @construction_started = null
         @construction_timer = null
         @built = false
+        @employees = @opts.employees
+        @max_employees = @opts.max_employees
 
         @construction_tmpl = _.template $('#structure-under-construction-template').html()
 
@@ -25,6 +27,8 @@ class Structure extends RenderedObject
             super,
             begin_construction: true
             construction_time: WorldClock.duration 1, 'minutes'
+            employees: []
+            max_employees: 5
         )
 
     update: (clock) ->
