@@ -5,6 +5,8 @@ class ModTownGame extends RenderedObject
         @clock = new WorldClock()
         @clock.tick()
 
+        @weather = new WeatherSystem()
+
         @state = new StateManager('init')
         @setup_player()
         @setup_hud()
@@ -66,11 +68,14 @@ class ModTownGame extends RenderedObject
     update: ->
         @state.update()
 
-        @town.update(@clock)
+        @weather.update(@clock)
+
+        @town.update(@clock, @weather)
         @hud.update 
             town: @town
             player: @player
             clock: @clock
+            weather: @weather
 
         # todo: don't have states determined yet
         # switch state.current()

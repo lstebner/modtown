@@ -3,9 +3,14 @@ class WorldClock
 
     @max_seconds: 60
     @max_minutes: 60
+    @minutes_in_hour: WorldClock.max_minutes
     @max_hours: 10
+    @hours_in_day: WorldClock.max_hours
     @max_days: 30
+    @days_in_month: WorldClock.max_days
     @max_months: 16
+    @months_in_year: WorldClock.max_months
+    @days_in_year: WorldClock.max_days * WorldClock.max_months
     @seconds_in_minute: WorldClock.max_seconds
     @seconds_in_hour: WorldClock.seconds_in_minute * WorldClock.max_minutes
     @seconds_in_day: WorldClock.seconds_in_hour * WorldClock.max_hours
@@ -34,6 +39,9 @@ class WorldClock
         @month = 0
         @year = 0
 
+        #skip ahead in time randomly somewhere in the next 10 years
+        @since_epoch = WorldClock.duration Math.random() * 10, 'years'
+
         @timeout = null
         @timers = []
 
@@ -61,8 +69,8 @@ class WorldClock
             @second = @since_epoch  % WorldClock.max_seconds
         @minute = @since_epoch / WorldClock.seconds_in_minute % WorldClock.max_minutes
         @hour = @since_epoch / WorldClock.seconds_in_hour % WorldClock.max_hours
-        @day = Math.floor @since_epoch / WorldClock.seconds_in_day
-        @month = Math.floor @since_epoch / WorldClock.seconds_in_month
+        @day = Math.floor @since_epoch / WorldClock.seconds_in_day % WorldClock.max_days
+        @month = Math.floor @since_epoch / WorldClock.seconds_in_month % WorldClock.max_months
         @year = Math.floor @since_epoch / WorldClock.seconds_in_year
 
         @update_timers()
@@ -73,6 +81,9 @@ class WorldClock
 
     now: ->
         @get_time()
+
+    day_in_year: ->
+        @month * WorldClock.max_days + @day
 
     since_midnight: ->
         @now() % WorldClock.seconds_in_day

@@ -21,6 +21,8 @@ class HUD extends RenderedObject
             clock_time: @view_data.clock.get_time('h:m:s')
             balance: @view_data.town.balance
             occupancy_percent: Math.round @view_data.town.occupancy_percent * 100
+            weather_season: @view_data.weather.current_season()
+            weather_conditions: @view_data.weather.state.current()
 
         for key, val of fill_values
             @container.find("[data-fill=#{key}]").text(val)
