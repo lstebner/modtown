@@ -1,9 +1,26 @@
 # @codekit-prepend "Crop.coffee";
 
+some_crops = 
+    wheat:
+        name: 'Wheat'
+    potatos:
+        name: 'Potatos'
+    carrots: 
+        name: 'Carrots'
+    rice:
+        name: 'Rice'
+    grapes:
+        name: 'Grapes'
+
+some_crop_menu_items = {}
+for key, crop of some_crops
+    some_crop_menu_items[key] = crop.name
+
 class Farm extends Structure
     constructor: ->
         super
 
+        @available_crops = some_crops # @opts.available_crops
         @crop = @opts.crop
         @crop_state = new StateManager('not_planted')
         @till_soil_time = WorldClock.duration 1, 'minutes'
@@ -15,6 +32,7 @@ class Farm extends Structure
             super,
             construction_time: WorldClock.duration 5, 'seconds'
             crop: null
+            available_crops: []
         )
 
     get_view_data: ->
@@ -33,6 +51,22 @@ class Farm extends Structure
     begin_construction: ->
         @construction_time = WorldClock.duration(10, 'seconds')
         super
+
+    setup_events: ->
+        @container.on 'click', (e) =>
+            e.preventDefault()
+            $el = $(e.target)
+
+            switch $el.data('action')
+                when 'select_crop'
+                    select_crop_menu = new SelectCropMenu null, 
+                        open: true
+                        items: some_crop_menu_items
+                    select_crop_menu.container.on 'item_selected', (e, value) =>
+                        if _.has @available_crops, value
+                            @crop = @available_crops[value]
+
+                when 'start_planting' then @state.change_state('start_planting')
 
     update: (clock) ->
         super

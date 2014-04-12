@@ -3,6 +3,12 @@
         Farm
         <% if (!built) { %>
             (not yet built)
+        <% } else if (state.current() == "idle") { %>
+            <% if (crop == null){ %>
+                <a href="#" data-action="select_crop" class="btn">Select Crop to Plant</a>
+            <% } else { %>
+                <a href="#" data-action="start_planting" class="btn">Plant Crop</a>
+            <% } %>
         <% } %>
     </div>
 </script>
