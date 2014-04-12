@@ -36,6 +36,9 @@ class WeatherSystem
     current_season: ->
         WeatherSystem.seasons[@season]
 
+    sun_is_up: ->
+        @sun_state.current() == "up" || @sun_state.current() == "rising"
+
     update_sun: (day, time_as_seconds) ->
         schedule = @sun_schedule[day]
         rise_time = WorldClock.duration '40', 'minutes'

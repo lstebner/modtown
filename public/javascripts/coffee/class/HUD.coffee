@@ -23,6 +23,7 @@ class HUD extends RenderedObject
             occupancy_percent: Math.round @view_data.town.occupancy_percent * 100
             weather_season: @view_data.weather.current_season()
             weather_conditions: @view_data.weather.state.current()
+            sun_is_up: if @view_data.weather.sun_is_up() then "up" else "down"
 
         for key, val of fill_values
             @container.find("[data-fill=#{key}]").text(val)
