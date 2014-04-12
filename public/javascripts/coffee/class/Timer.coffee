@@ -33,6 +33,9 @@ class Timer
     remaining_percent: ->
         @ticks / @duration
 
+    completed_percent: ->
+        (@duration - @ticks) / @duration
+
     complete: ->
         @ticks > @duration
 
@@ -43,5 +46,11 @@ class Timer
         @ticks = 0
 
         @tick() if begin_ticking
+
+    set_duration: (new_dur, reset=false) ->
+        @duration = new_dur if new_dur > -1
+
+        @reset() if reset
+
 
 World.Timer = Timer
