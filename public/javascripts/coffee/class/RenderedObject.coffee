@@ -9,6 +9,7 @@ class RenderedObject
         @rendered = false
         @view_data = {}
         @set_opts opts
+        @state = new StateManager('idle')
 
         @name = if @opts.name? then @opts.name else ''
         @id = if @opts.id? then @opts.id else _auto_id()
