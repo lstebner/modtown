@@ -43,7 +43,7 @@ class Structure extends RenderedObject
         @finish_construction() if @construction_time_remaining < 0
 
     is_under_construction: ->
-        @state.current() == 'under_construction'
+        @state.current() == 'under_construction' || @state.current() == "begin_construction"
 
     begin_construction: (clock) ->
         @change_state 'under_construction'
