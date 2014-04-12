@@ -1,4 +1,4 @@
-\ f# class StateManager
+# class StateManager
 
 The purpose of this class is to manage the changing of states. The problem with changing a state "at will" is that a change could happen mid update (in between two objects reading data and making state-based decisions) and cause odd behaviour. Using this class to change_states at a regular scheduled update will make sure everything is in sync.
 
