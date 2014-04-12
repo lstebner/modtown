@@ -31,10 +31,11 @@ class Timer
         @duration - @ticks
 
     remaining_percent: ->
-        @ticks / @duration
-
-    completed_percent: ->
         (@duration - @ticks) / @duration
+
+    percent_complete: ->
+        #don't let this go over 100%
+        Math.min 1, @ticks / @duration
 
     complete: ->
         @ticks > @duration
