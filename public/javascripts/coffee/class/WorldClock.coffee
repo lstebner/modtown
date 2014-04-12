@@ -162,4 +162,14 @@ class WorldClock
 
         new_timer
 
+    set_time: (new_epoch) ->
+        @since_epoch = new_epoch
+        throw('Time warp! *No matter what*.. do not erase past instances of yourself.')
+
+    add_time: (amount=1, of_what="seconds") ->
+        @since_epoch += WorldClock.duration amount, of_what
+
+    subtract_time: (amount=1, of_what="seconds") ->
+        @since_epoch -= WorldClock.duration amount, of_what
+
 World.WorldClock = WorldClock
