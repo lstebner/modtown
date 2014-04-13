@@ -41,6 +41,7 @@ class WorldClock
 
         #skip ahead in time randomly somewhere in the next 10 years
         @since_epoch = WorldClock.duration Math.random() * 10, 'years'
+        @epoch_skewed = false
 
         @timeout = null
         @timers = []
@@ -164,12 +165,15 @@ class WorldClock
 
     set_time: (new_epoch) ->
         @since_epoch = new_epoch
+        @epoch_skewed = true
         throw('Time warp! *No matter what*.. do not erase past instances of yourself.')
 
     add_time: (amount=1, of_what="seconds") ->
+        @epoch_skewed = true
         @since_epoch += WorldClock.duration amount, of_what
 
     subtract_time: (amount=1, of_what="seconds") ->
+        @epoch_skewed = true
         @since_epoch -= WorldClock.duration amount, of_what
 
 World.WorldClock = WorldClock
