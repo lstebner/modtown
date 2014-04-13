@@ -16,16 +16,24 @@ some_crop_menu_items = {}
 for key, crop of some_crops
     some_crop_menu_items[key] = crop.name
 
+    some_crops[key] = new Crop null, _.extend(crop, { type: key })
+
 class Farm extends Structure
     constructor: ->
         super
 
         @available_crops = some_crops # @opts.available_crops
         @crop = @opts.crop
-        @crop_state = new StateManager('not_planted')
-        @till_soil_time = WorldClock.duration 1, 'minutes'
+        @till_soil_time = WorldClock.duration .3, 'minutes'
         @soil_ready = false
+        @acres = 1 #1 acre in sq ft = 43560
+        @crop_capacity = 0
+        @plots_per_acre = 0
+        @planted_crops = []
         @harvested_crops = []
+        @state_timer = new Timer()
+
+        @plots_available()
     
     default_opts: ->
         _.extend(
@@ -36,13 +44,20 @@ class Farm extends Structure
         )
 
     get_view_data: ->
+        percent_complete = if @state.current() == "planting"
+            @planted_crops.length / @crop_capacity
+        else
+            @state_timer.percent_complete()
+
         _.extend(
             super,
             crop: @crop
             crop_state: @crop_state
             state: @state
-            soild_ready: @soild_ready
+            percent_complete: Math.round(percent_complete * 100)
+            soil_ready: @soil_ready
             harvested_crops: @harvested_crops
+            planted_crops: @planted_crops
         )
 
     template_id: ->
@@ -64,7 +79,7 @@ class Farm extends Structure
                         items: some_crop_menu_items
                     select_crop_menu.container.on 'item_selected', (e, value) =>
                         if _.has @available_crops, value
-                            @crop = @available_crops[value]
+                            @set_crop @available_crops[value]
 
                 when 'start_planting' then @state.change_state('start_planting')
 
@@ -87,14 +102,28 @@ class Farm extends Structure
 
     idle: ->
 
-    #todo: implement
     can_change_crop: ->
         return @state.current() == "idle"
+
+    crops_per_acre: ->
+        return unless @crop
+
+        @plots_per_acre = 43560 / @crop.spacing
+        @crop_capacity = @plots_per_acre * @acres
+
+        @plots_per_acre
+
+    total_plots: ->
+        @plots_per_acre * @acres
+
+    plots_available: ->
+        @total_plots() - @planted_crops.length
 
     set_crop: (new_crop, start_planting=true) ->
         return unless @can_change_crop()
 
         @crop = new_crop
+        @crops_per_acre()
 
         if start_planting
             if @state.current() != 'idle'
@@ -104,26 +133,63 @@ class Farm extends Structure
 
     start_planting: ->
         @state.change_state('tilling_soil')
+        @state_timer.set_duration @till_soil_time
+        @state_timer.reset()
 
     till_soil: (clock) ->
-        done = false
+        @state_timer.tick()
 
-        if done
+        if @state_timer.complete()
             @soil_ready = true
             @state.change_state('planting')
+            @state_timer.set_duration @crop.planting_time(clock), true
 
     planting: (clock) ->
-        return unless clock.is_afternoon()
+        return unless @crop && clock.is_afternoon()
 
-        done = false
+        # Planting
+        # Each plant requires a certain amount of time to be planted
+        # The farm has a certain number of "plots" available to plant on
+        # Planting is complete when every plot has a plant in it. 
 
-        if done
-            @state.change_state('growing')
+        #once we run out of plots, we are done planting
+        if !@plots_available()
+            @finish_planting()
+        else
+            last = if @planted_crops.length
+                @planted_crops.length - 1
+            else
+                false
+
+            #if the last plant is not done planting yet then give it priority
+            if last != false && !@planted_crops[last].fully_planted()
+                @planted_crops[last].update(clock)
+            #otherwise, start a new plant
+            else
+                new_plant = new Crop null, @available_crops[@crop.type]
+                new_plant.start_planting()
+                @planted_crops.push new_plant
+
+    #transition state
+    finish_planting: (trigger_event='complete') ->
+        @container.trigger("planting_#{trigger_event}") if trigger_event?
+        @state.change_state('growing')
+        @state_timer.set_duration @crop_capacity, true
 
     growing: (clock) ->
-        done = false
+        return unless @crop
 
-        if done
+        all_grown = false
+
+        for c in @planted_crops
+            c.update(clock)
+
+            if c.fully_planted()
+                @state_timer.tick()
+            if @planted_crops.length == @crop_capacity && c.fully_planted()
+                all_grown = true
+
+        if all_grown
             @state.change_state('harvest')
 
     harvest: (clock) ->
@@ -138,3 +204,8 @@ class Farm extends Structure
         @state.change_state('.planting')
 
     employ_resident: (resident) ->
+
+
+
+
+
