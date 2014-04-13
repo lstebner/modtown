@@ -108,13 +108,15 @@ class Farm extends Structure
     crops_per_acre: ->
         return unless @crop
 
-        @plots_per_acre = 43560 / @crop.spacing
-        @crop_capacity = @plots_per_acre * @acres
+        # 43560 is the amount of real sq ft per acre. Not sure if that'll work
+        # for our game though honestly
+        @plots_per_acre = 10 / @crop.spacing
+        @crop_capacity = Math.floor(@plots_per_acre * @acres)
 
         @plots_per_acre
 
     total_plots: ->
-        @plots_per_acre * @acres
+        Math.floor(@plots_per_acre * @acres)
 
     plots_available: ->
         @total_plots() - @planted_crops.length
@@ -177,7 +179,7 @@ class Farm extends Structure
         @state_timer.set_duration @crop_capacity, true
 
     growing: (clock) ->
-        return unless @crop
+        return unless @planted_crops.length
 
         all_grown = false
 
