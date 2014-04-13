@@ -33,7 +33,7 @@ class Crop extends RenderedObject
 
     update: (clock) ->
         @state.update(clock)
-        @state_timer.tick() if !@state_timer.complete()
+        @state_timer.update() if !@state_timer.is_complete()
 
         switch @state.current()
             when 'idle' then @idle()
@@ -59,9 +59,9 @@ class Crop extends RenderedObject
         @state_timer.set_duration @plant_rate_to_ticks(), true
 
     planting: (clock) ->
-        @state_timer.tick()
+        @state_timer.update()
 
-        if @state_timer.complete()
+        if @state_timer.is_complete()
             @planting_finished()
 
     planting_finished: ->

@@ -135,13 +135,12 @@ class Farm extends Structure
 
     start_planting: ->
         @state.change_state('tilling_soil')
-        @state_timer.set_duration @till_soil_time
-        @state_timer.reset()
+        @state_timer.set_duration @till_soil_time, true
 
     till_soil: (clock) ->
-        @state_timer.tick()
+        @state_timer.update()
 
-        if @state_timer.complete()
+        if @state_timer.is_complete()
             @soil_ready = true
             @state.change_state('planting')
             @state_timer.set_duration @crop.planting_time(clock), true
@@ -187,7 +186,7 @@ class Farm extends Structure
             c.update(clock)
 
             if c.fully_planted()
-                @state_timer.tick()
+                @state_timer.update()
             if @planted_crops.length == @crop_capacity && c.fully_planted()
                 all_grown = true
 

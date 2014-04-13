@@ -85,7 +85,7 @@ class WorldClock
 
     update_timers: ->
         for timer in @timers
-            timer.tick()
+            timer.update()
 
     now: ->
         @get_time()

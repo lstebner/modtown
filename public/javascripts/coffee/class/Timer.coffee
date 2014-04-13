@@ -2,30 +2,50 @@ class Timer
     constructor: (@duration=0, @on_complete=null, @on_tick=null)->
         @ticks = 0
         @timeout = null
+        @state = new StateManager('init')
+        @allow_auto_start = true
 
     on: (what, fn) ->
         switch what
             when 'on_tick' then @on_tick = fn
             when 'complete' then @on_complete = fn
-
-    tick: (repeat=false, tick_every=1000)->
-        return if @complete()
-
-        @on_tick?(@ticks)
+        
+    start: (repeat=false, tick_every=1000) ->
+        @state.change_state('running')
 
         if repeat
             clearTimeout(@timeout) if @timeout
 
             @timeout = setTimeout =>
-                @tick(true, tick_every)
+                @update(true, tick_every)
             , tick_every
 
-        @update()
+    pause: ->
+        @state.change_state('paused')
 
-    update: ->
+    stop: ->
+        @state.change_state('stopped')
+
+    resume: ->
+        @state.change_state('running')
+
+    tick: ->
         @ticks += 1
 
-        @finish() if @ticks > @duration
+        @on_tick?(@ticks)
+
+        @finish() if @duration > 0 && @ticks > @duration
+
+    update: ->
+        @state.update()
+
+        switch @state.current()
+            when 'idle' then @start() if @allow_auto_start
+            when 'reset' then @start()
+            when 'running' then @tick()
+            when 'stopped'
+                clearTimeout(@timeout) if @timeout
+                @reset()
 
     remaining: ->
         @duration - @ticks
@@ -37,16 +57,19 @@ class Timer
         #don't let this go over 100%
         Math.min 1, @ticks / @duration
 
-    complete: ->
-        @ticks > @duration
+    is_complete: ->
+        @state.current() == "complete"
+
+    is_running: ->
+        @state.current() == "running"
 
     finish: ->
         @on_complete?()
+        @state.change_state('complete')
 
-    reset: (begin_ticking=false) ->
+    reset: ->
         @ticks = 0
-
-        @tick() if begin_ticking
+        @state.change_state('reset')
 
     set_duration: (new_dur, reset=false) ->
         @duration = new_dur if new_dur > -1

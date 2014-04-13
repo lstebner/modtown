@@ -79,6 +79,8 @@
       this.on_tick = on_tick != null ? on_tick : null;
       this.ticks = 0;
       this.timeout = null;
+      this.state = new StateManager('init');
+      this.allow_auto_start = true;
     }
 
     Timer.prototype.on = function(what, fn) {
@@ -90,7 +92,7 @@
       }
     };
 
-    Timer.prototype.tick = function(repeat, tick_every) {
+    Timer.prototype.start = function(repeat, tick_every) {
       var _this = this;
       if (repeat == null) {
         repeat = false;
@@ -98,27 +100,56 @@
       if (tick_every == null) {
         tick_every = 1000;
       }
-      if (this.complete()) {
-        return;
-      }
-      if (typeof this.on_tick === "function") {
-        this.on_tick(this.ticks);
-      }
+      this.state.change_state('running');
       if (repeat) {
         if (this.timeout) {
           clearTimeout(this.timeout);
         }
-        this.timeout = setTimeout(function() {
-          return _this.tick(true, tick_every);
+        return this.timeout = setTimeout(function() {
+          return _this.update(true, tick_every);
         }, tick_every);
       }
-      return this.update();
+    };
+
+    Timer.prototype.pause = function() {
+      return this.state.change_state('paused');
+    };
+
+    Timer.prototype.stop = function() {
+      return this.state.change_state('stopped');
+    };
+
+    Timer.prototype.resume = function() {
+      return this.state.change_state('running');
+    };
+
+    Timer.prototype.tick = function() {
+      this.ticks += 1;
+      if (typeof this.on_tick === "function") {
+        this.on_tick(this.ticks);
+      }
+      if (this.duration > 0 && this.ticks > this.duration) {
+        return this.finish();
+      }
     };
 
     Timer.prototype.update = function() {
-      this.ticks += 1;
-      if (this.ticks > this.duration) {
-        return this.finish();
+      this.state.update();
+      switch (this.state.current()) {
+        case 'idle':
+          if (this.allow_auto_start) {
+            return this.start();
+          }
+          break;
+        case 'reset':
+          return this.start();
+        case 'running':
+          return this.tick();
+        case 'stopped':
+          if (this.timeout) {
+            clearTimeout(this.timeout);
+          }
+          return this.reset();
       }
     };
 
@@ -127,24 +158,42 @@
     };
 
     Timer.prototype.remaining_percent = function() {
-      return this.ticks / this.duration;
+      return (this.duration - this.ticks) / this.duration;
     };
 
-    Timer.prototype.complete = function() {
-      return this.ticks > this.duration;
+    Timer.prototype.percent_complete = function() {
+      return Math.min(1, this.ticks / this.duration);
+    };
+
+    Timer.prototype.is_complete = function() {
+      return this.state.current() === "complete";
+    };
+
+    Timer.prototype.is_running = function() {
+      return this.state.current() === "running";
     };
 
     Timer.prototype.finish = function() {
-      return typeof this.on_complete === "function" ? this.on_complete() : void 0;
+      if (typeof this.on_complete === "function") {
+        this.on_complete();
+      }
+      return this.state.change_state('complete');
     };
 
-    Timer.prototype.reset = function(begin_ticking) {
-      if (begin_ticking == null) {
-        begin_ticking = false;
-      }
+    Timer.prototype.reset = function() {
       this.ticks = 0;
-      if (begin_ticking) {
-        return this.tick();
+      return this.state.change_state('reset');
+    };
+
+    Timer.prototype.set_duration = function(new_dur, reset) {
+      if (reset == null) {
+        reset = false;
+      }
+      if (new_dur > -1) {
+        this.duration = new_dur;
+      }
+      if (reset) {
+        return this.reset();
       }
     };
 
@@ -161,8 +210,6 @@
 
 
   WorldClock = (function() {
-    WorldClock.time_speedx = 1;
-
     WorldClock.max_seconds = 60;
 
     WorldClock.max_minutes = 60;
@@ -222,6 +269,7 @@
     };
 
     function WorldClock() {
+      this.time_speedx = 1;
       this.since_epoch = 0;
       this.second = 0;
       this.minute = 0;
@@ -230,8 +278,10 @@
       this.month = 0;
       this.year = 0;
       this.since_epoch = WorldClock.duration(Math.random() * 10, 'years');
+      this.epoch_skewed = false;
       this.timeout = null;
       this.timers = [];
+      this.on_tick_fn = null;
     }
 
     WorldClock.prototype.tick = function(set_timeout) {
@@ -245,10 +295,16 @@
         if (this.timeout) {
           clearTimeout(this.timeout);
         }
-        onetick = 1000 * WorldClock.time_speedx;
-        return this.timeout = setTimeout(function() {
+        onetick = 1000;
+        if (this.time_speedx > 1) {
+          onetick = 1000 * 1 / this.time_speedx;
+        } else if (this.time_speedx < 1) {
+          onetick = 1000 * (1 + this.time_speedx);
+        }
+        this.timeout = setTimeout(function() {
           return _this.tick();
         }, onetick);
+        return typeof this.on_tick_fn === "function" ? this.on_tick_fn() : void 0;
       }
     };
 
@@ -275,7 +331,7 @@
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         timer = _ref[_i];
-        _results.push(timer.tick());
+        _results.push(timer.update());
       }
       return _results;
     };
@@ -404,6 +460,50 @@
       return new_timer;
     };
 
+    WorldClock.prototype.set_time = function(new_epoch) {
+      this.since_epoch = new_epoch;
+      this.epoch_skewed = true;
+      throw 'Time warp! *No matter what*.. do not erase past instances of yourself.';
+    };
+
+    WorldClock.prototype.add_time = function(amount, of_what) {
+      if (amount == null) {
+        amount = 1;
+      }
+      if (of_what == null) {
+        of_what = "seconds";
+      }
+      this.epoch_skewed = true;
+      return this.since_epoch += WorldClock.duration(amount, of_what);
+    };
+
+    WorldClock.prototype.subtract_time = function(amount, of_what) {
+      if (amount == null) {
+        amount = 1;
+      }
+      if (of_what == null) {
+        of_what = "seconds";
+      }
+      this.epoch_skewed = true;
+      return this.since_epoch -= WorldClock.duration(amount, of_what);
+    };
+
+    WorldClock.prototype.on_tick = function(fn) {
+      return this.on_tick_fn = fn;
+    };
+
+    WorldClock.prototype.time_speed_plus = function() {
+      return this.time_speedx = Math.min(4, this.time_speedx + .5);
+    };
+
+    WorldClock.prototype.time_speed_minus = function() {
+      return this.time_speedx = Math.max(.5, this.time_speedx - .5);
+    };
+
+    WorldClock.prototype.time_speed_default = function() {
+      return this.time_speedx = 1;
+    };
+
     return WorldClock;
 
   })();
@@ -459,6 +559,10 @@
 
     WeatherSystem.prototype.current_season = function() {
       return WeatherSystem.seasons[this.season];
+    };
+
+    WeatherSystem.prototype.sun_is_up = function() {
+      return this.sun_state.current() === "up" || this.sun_state.current() === "rising";
     };
 
     WeatherSystem.prototype.update_sun = function(day, time_as_seconds) {
@@ -1200,7 +1304,8 @@
         balance: this.view_data.town.balance,
         occupancy_percent: Math.round(this.view_data.town.occupancy_percent * 100),
         weather_season: this.view_data.weather.current_season(),
-        weather_conditions: this.view_data.weather.state.current()
+        weather_conditions: this.view_data.weather.state.current(),
+        sun_is_up: this.view_data.weather.sun_is_up() ? "up" : "down"
       };
       _results = [];
       for (key in fill_values) {
@@ -1285,6 +1390,9 @@
       }
       if (queue_state == null) {
         queue_state = '';
+      }
+      if (new_state === this.current_state) {
+        return;
       }
       this.next_state = new_state;
       this.record_history('next');
@@ -1373,9 +1481,9 @@
       street: 100
     };
 
-    Town.extra_visitors = true;
+    Town.extra_visitors = false;
 
-    Town.visitor_chance = Town.extra_visitors ? .75 : .15;
+    Town.visitor_chance = Town.extra_visitors ? .15 : .05;
 
     Town.visitors_all_day = true;
 
@@ -2025,6 +2133,7 @@
     function Structure() {
       Structure.__super__.constructor.apply(this, arguments);
       this.state = new StateManager('idle');
+      this.state_timer = new Timer();
       this.type = '';
       this.cost = 1;
       this.construction_time = this.opts.construction_time;
@@ -2033,6 +2142,8 @@
       this.built = false;
       this.employees = this.opts.employees;
       this.max_employees = this.opts.max_employees;
+      this.operating_cost = this.opts.operating_cost;
+      this.lifetime_operating_cost = 0;
       this.construction_tmpl = _.template($('#structure-under-construction-template').html());
       if (this.opts.begin_construction) {
         this.change_state('begin_construction');
@@ -2044,7 +2155,8 @@
         begin_construction: true,
         construction_time: WorldClock.duration(1, 'minutes'),
         employees: [],
-        max_employees: 5
+        max_employees: 5,
+        operating_cost: 10
       });
     };
 
@@ -2061,8 +2173,9 @@
     };
 
     Structure.prototype.progress_construction = function(clock) {
-      this.construction_time_remaining = this.construction_time - (clock.now() - this.construction_started);
-      if (this.construction_time_remaining < 0) {
+      this.state_timer.update();
+      this.construction_time_remaining = this.state_timer.remaining;
+      if (this.state_timer.is_complete()) {
         return this.finish_construction();
       }
     };
@@ -2073,7 +2186,7 @@
 
     Structure.prototype.begin_construction = function(clock) {
       this.change_state('under_construction');
-      this.construction_time_remaining = this.construction_time;
+      this.state_timer.set_duration(this.construction_time, true);
       this.construction_started = World.game.clock.now();
       return this.built = false;
     };
@@ -2090,8 +2203,8 @@
         case 'under_construction':
           vdata = {
             construction_time: this.construction_time,
-            construction_time_remaining: this.construction_time_remaining,
-            construction_percent_complete: Math.min(1, (this.construction_time - this.construction_time_remaining) / this.construction_time),
+            construction_time_remaining: this.state_timer.remaining(),
+            construction_percent_complete: this.state_timer.percent_complete(),
             construction_time_nice: moment.duration(this.construction_time_remaining, 'milliseconds').humanize()
           };
           break;
@@ -2129,29 +2242,112 @@
 
     function Crop() {
       Crop.__super__.constructor.apply(this, arguments);
-      this.state = new StateManager('idle');
       this.can_grow_at_night = this.opts.can_grow_at_night;
       this.drops_seeds = this.opts.drops_seeds;
       this.harvest_amount = this.opts.harvest_amount;
       this.growth_rate = this.opts.growth_rate;
       this.planting_rate = this.opts.planting_rate;
       this.needs_water = this.opts.needs_water;
+      this.type = this.opts.type;
+      this.spacing = 2;
+      this.state_timer = new Timer();
+      this.state.change_state('idle');
+      this.is_planted = false;
+      this.current_growth = 0;
     }
 
     Crop.prototype.default_opts = function() {
       return _.extend(Crop.__super__.default_opts.apply(this, arguments), {
         can_grow_at_night: false,
-        growth_rate: .3,
-        planting_rate: 1,
+        growth_rate: .03,
+        planting_rate: .1,
         drops_seeds: true,
         harvest_amount: 1,
-        needs_water: true
+        needs_water: true,
+        type: ''
       });
     };
 
-    Crop.prototype.update = function(clock) {};
+    Crop.prototype.space_needed = function() {
+      return this.spacing;
+    };
 
-    Crop.prototype.growth_per_tick = function() {};
+    Crop.prototype.update = function(clock) {
+      this.state.update(clock);
+      if (!this.state_timer.is_complete()) {
+        this.state_timer.update();
+      }
+      switch (this.state.current()) {
+        case 'idle':
+          return this.idle();
+        case 'planting':
+          return this.planting();
+        case 'growing':
+          return this.growing();
+        case 'fully_grown':
+          return this.fully_grown();
+      }
+    };
+
+    Crop.prototype.plant_rate_to_ticks = function() {
+      return WorldClock.duration(100 * this.planting_rate, 'seconds');
+    };
+
+    Crop.prototype.growth_rate_to_ticks = function() {
+      return WorldClock.duration(100 * this.growth_rate, 'seconds');
+    };
+
+    Crop.prototype.idle = function() {};
+
+    Crop.prototype.planting_time = function() {
+      return WorldClock.duration(1, 'minutes') * this.planting_rate;
+    };
+
+    Crop.prototype.reset_growth = function() {};
+
+    Crop.prototype.start_planting = function() {
+      this.state.change_state('planting');
+      return this.state_timer.set_duration(this.plant_rate_to_ticks(), true);
+    };
+
+    Crop.prototype.planting = function(clock) {
+      this.state_timer.update();
+      if (this.state_timer.is_complete()) {
+        return this.planting_finished();
+      }
+    };
+
+    Crop.prototype.planting_finished = function() {
+      this.is_planted = true;
+      this.container.trigger('planting_finished');
+      this.state.change_state('growing');
+      return this.state_timer.set_duration(this.growth_rate_to_ticks(), true);
+    };
+
+    Crop.prototype.growing = function(clock) {
+      if (Math.random() < (this.growth_rate * 10)) {
+        this.current_growth += this.growth_rate;
+        if (this.current_growth > 100) {
+          return this.finish_growing();
+        }
+      }
+    };
+
+    Crop.prototype.growth_percent = function() {
+      return Math.min(1, this.current_growth / 100);
+    };
+
+    Crop.prototype.finish_growing = function() {
+      return this.state.change_state('fully_grown');
+    };
+
+    Crop.prototype.fully_planted = function() {
+      return this.is_planted;
+    };
+
+    Crop.prototype.fully_grown = function() {
+      return this.state.current() === "fully_grown";
+    };
 
     return Crop;
 
@@ -2186,6 +2382,9 @@
   for (key in some_crops) {
     crop = some_crops[key];
     some_crop_menu_items[key] = crop.name;
+    some_crops[key] = new Crop(null, _.extend(crop, {
+      type: key
+    }));
   }
 
   Farm = (function(_super) {
@@ -2195,10 +2394,15 @@
       Farm.__super__.constructor.apply(this, arguments);
       this.available_crops = some_crops;
       this.crop = this.opts.crop;
-      this.crop_state = new StateManager('not_planted');
-      this.till_soil_time = WorldClock.duration(1, 'minutes');
+      this.till_soil_time = WorldClock.duration(.3, 'minutes');
       this.soil_ready = false;
+      this.acres = 1;
+      this.crop_capacity = 0;
+      this.plots_per_acre = 0;
+      this.planted_crops = [];
       this.harvested_crops = [];
+      this.state_timer = new Timer();
+      this.plots_available();
     }
 
     Farm.prototype.default_opts = function() {
@@ -2210,12 +2414,16 @@
     };
 
     Farm.prototype.get_view_data = function() {
+      var percent_complete;
+      percent_complete = this.state.current() === "planting" ? this.planted_crops.length / this.crop_capacity : this.state_timer.percent_complete();
       return _.extend(Farm.__super__.get_view_data.apply(this, arguments), {
         crop: this.crop,
         crop_state: this.crop_state,
         state: this.state,
-        soild_ready: this.soild_ready,
-        harvested_crops: this.harvested_crops
+        percent_complete: Math.round(percent_complete * 100),
+        soil_ready: this.soil_ready,
+        harvested_crops: this.harvested_crops,
+        planted_crops: this.planted_crops
       });
     };
 
@@ -2242,7 +2450,7 @@
             });
             return select_crop_menu.container.on('item_selected', function(e, value) {
               if (_.has(_this.available_crops, value)) {
-                return _this.crop = _this.available_crops[value];
+                return _this.set_crop(_this.available_crops[value]);
               }
             });
           case 'start_planting':
@@ -2282,6 +2490,23 @@
       return this.state.current() === "idle";
     };
 
+    Farm.prototype.crops_per_acre = function() {
+      if (!this.crop) {
+        return;
+      }
+      this.plots_per_acre = 10 / this.crop.spacing;
+      this.crop_capacity = Math.floor(this.plots_per_acre * this.acres);
+      return this.plots_per_acre;
+    };
+
+    Farm.prototype.total_plots = function() {
+      return Math.floor(this.plots_per_acre * this.acres);
+    };
+
+    Farm.prototype.plots_available = function() {
+      return this.total_plots() - this.planted_crops.length;
+    };
+
     Farm.prototype.set_crop = function(new_crop, start_planting) {
       if (start_planting == null) {
         start_planting = true;
@@ -2290,6 +2515,7 @@
         return;
       }
       this.crop = new_crop;
+      this.crops_per_acre();
       if (start_planting) {
         if (this.state.current() !== 'idle') {
           return this.reset();
@@ -2300,33 +2526,67 @@
     };
 
     Farm.prototype.start_planting = function() {
-      return this.state.change_state('tilling_soil');
+      this.state.change_state('tilling_soil');
+      return this.state_timer.set_duration(this.till_soil_time, true);
     };
 
     Farm.prototype.till_soil = function(clock) {
-      var done;
-      done = false;
-      if (done) {
+      this.state_timer.update();
+      if (this.state_timer.is_complete()) {
         this.soil_ready = true;
-        return this.state.change_state('planting');
+        this.state.change_state('planting');
+        return this.state_timer.set_duration(this.crop.planting_time(clock), true);
       }
     };
 
     Farm.prototype.planting = function(clock) {
-      var done;
-      if (!clock.is_afternoon()) {
+      var last, new_plant;
+      if (!(this.crop && clock.is_afternoon())) {
         return;
       }
-      done = false;
-      if (done) {
-        return this.state.change_state('growing');
+      if (!this.plots_available()) {
+        return this.finish_planting();
+      } else {
+        last = this.planted_crops.length ? this.planted_crops.length - 1 : false;
+        if (last !== false && !this.planted_crops[last].fully_planted()) {
+          return this.planted_crops[last].update(clock);
+        } else {
+          new_plant = new Crop(null, this.available_crops[this.crop.type]);
+          new_plant.start_planting();
+          return this.planted_crops.push(new_plant);
+        }
       }
     };
 
+    Farm.prototype.finish_planting = function(trigger_event) {
+      if (trigger_event == null) {
+        trigger_event = 'complete';
+      }
+      if (trigger_event != null) {
+        this.container.trigger("planting_" + trigger_event);
+      }
+      this.state.change_state('growing');
+      return this.state_timer.set_duration(this.crop_capacity, true);
+    };
+
     Farm.prototype.growing = function(clock) {
-      var done;
-      done = false;
-      if (done) {
+      var all_grown, c, _i, _len, _ref1;
+      if (!this.planted_crops.length) {
+        return;
+      }
+      all_grown = false;
+      _ref1 = this.planted_crops;
+      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+        c = _ref1[_i];
+        c.update(clock);
+        if (c.fully_planted()) {
+          this.state_timer.update();
+        }
+        if (this.planted_crops.length === this.crop_capacity && c.fully_planted()) {
+          all_grown = true;
+        }
+      }
+      if (all_grown) {
         return this.state.change_state('harvest');
       }
     };
@@ -2424,7 +2684,7 @@
     };
 
     Housing.prototype.begin_construction = function() {
-      this.construction_time = WorldClock.duration(1, 'seconds');
+      this.construction_time = WorldClock.duration(10, 'minutes');
       return Housing.__super__.begin_construction.apply(this, arguments);
     };
 
@@ -2544,18 +2804,20 @@
     __extends(ModTownGame, _super);
 
     function ModTownGame() {
+      var _this = this;
       ModTownGame.__super__.constructor.apply(this, arguments);
       this.clock = new WorldClock();
-      this.clock.tick();
       this.weather = new WeatherSystem();
       this.state = new StateManager('init');
       this.setup_player();
       this.setup_hud();
       this.setup_town();
       this.setup_events();
-      this.setup_timeout();
-      this.update();
-      this.render();
+      this.state.change_state('running');
+      this.clock.on_tick(function() {
+        return _this.update();
+      });
+      this.clock.tick();
     }
 
     ModTownGame.prototype.setup_player = function() {
@@ -2600,19 +2862,12 @@
       });
     };
 
-    ModTownGame.prototype.setup_timeout = function() {
-      var _this = this;
-      this.timeout = null;
-      return this.timeout = setInterval(function() {
-        return _this.update();
-      }, 60000 / 30);
-    };
-
     ModTownGame.prototype.pause = function(resume_in) {
       var _this = this;
       if (resume_in == null) {
         resume_in = null;
       }
+      this.state.change_state('paused');
       if (this.timeout) {
         clearInterval(this.timeout);
       }
@@ -2624,19 +2879,22 @@
     };
 
     ModTownGame.prototype.resume = function() {
-      return this.setup_timeout();
+      return this.state.change_state('running');
     };
 
     ModTownGame.prototype.update = function() {
       this.state.update();
-      this.weather.update(this.clock);
-      this.town.update(this.clock, this.weather);
-      this.hud.update({
-        town: this.town,
-        player: this.player,
-        clock: this.clock,
-        weather: this.weather
-      });
+      switch (this.state.current()) {
+        case 'running':
+          this.weather.update(this.clock);
+          this.town.update(this.clock, this.weather);
+          this.hud.update({
+            town: this.town,
+            player: this.player,
+            clock: this.clock,
+            weather: this.weather
+          });
+      }
       return this.render();
     };
 
