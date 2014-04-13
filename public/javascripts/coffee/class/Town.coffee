@@ -1,8 +1,8 @@
 class Town extends RenderedObject
     @costs: 
         street: 100
-    @extra_visitors: true
-    @visitor_chance: if Town.extra_visitors then .75 else .15
+    @extra_visitors: false
+    @visitor_chance: if Town.extra_visitors then .15 else .05
     @visitors_all_day: true
 
     default_opts: ->
