@@ -3,7 +3,6 @@ class ModTownGame extends RenderedObject
         super
 
         @clock = new WorldClock()
-        @clock.tick()
 
         @weather = new WeatherSystem()
 
@@ -12,10 +11,13 @@ class ModTownGame extends RenderedObject
         @setup_hud()
         @setup_town()
         @setup_events()
-        @setup_timeout()
 
-        @update()
-        @render()
+        @state.change_state('running')
+
+        @clock.on_tick =>
+            @update()
+
+        @clock.tick()
 
     setup_player: ->
         @player = new Player()
@@ -50,14 +52,8 @@ class ModTownGame extends RenderedObject
                     $el.text('Pause').data('action', 'pause')
                     @resume()
 
-    setup_timeout: ->
-        @timeout = null
-        #change to setInterval to make repeat forever
-        @timeout = setInterval =>
-            @update()
-        , 60000 / 30
-
     pause: (resume_in=null) ->
+        @state.change_state('paused')
         clearInterval(@timeout) if @timeout
 
         if resume_in
@@ -66,23 +62,21 @@ class ModTownGame extends RenderedObject
             , resume_in
 
     resume: ->
-        @setup_timeout()
+        @state.change_state('running')
 
     update: ->
         @state.update()
 
-        @weather.update(@clock)
+        switch @state.current()
+            when 'running'
+                @weather.update(@clock)
 
-        @town.update(@clock, @weather)
-        @hud.update 
-            town: @town
-            player: @player
-            clock: @clock
-            weather: @weather
-
-        # todo: don't have states determined yet
-        # switch state.current()
-        #     when 
+                @town.update(@clock, @weather)
+                @hud.update 
+                    town: @town
+                    player: @player
+                    clock: @clock
+                    weather: @weather
 
         @render()
 
