@@ -1,6 +1,4 @@
 class WorldClock
-    @time_speedx: 2
-
     @max_seconds: 60
     @max_minutes: 60
     @minutes_in_hour: WorldClock.max_minutes
@@ -31,6 +29,7 @@ class WorldClock
         in_seconds
 
     constructor: ->
+        @time_speedx = 1
         @since_epoch = 0
         @second = 0
         @minute = 0
@@ -186,5 +185,14 @@ class WorldClock
 
     on_tick: (fn) ->
         @on_tick_fn = fn
+
+    time_speed_plus: ->
+        @time_speedx = Math.min 4, @time_speedx + .5
+
+    time_speed_minus: ->
+        @time_speedx = Math.max .5, @time_speedx - .5
+
+    time_speed_default: ->
+        @time_speedx = 1
 
 World.WorldClock = WorldClock
