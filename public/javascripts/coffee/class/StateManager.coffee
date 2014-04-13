@@ -35,6 +35,8 @@ class StateManager
             @ticks = 0
 
     change_state: (new_state='', duration=0, queue_state='') ->
+        return if new_state == @current_state
+
         @next_state = new_state
         @record_history 'next'
 
