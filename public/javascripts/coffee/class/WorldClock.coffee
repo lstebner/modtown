@@ -1,5 +1,5 @@
 class WorldClock
-    @time_speedx: 1
+    @time_speedx: 2
 
     @max_seconds: 60
     @max_minutes: 60
@@ -45,6 +45,7 @@ class WorldClock
 
         @timeout = null
         @timers = []
+        @on_tick_fn = null
 
     tick: (set_timeout=true)->
         @update()
@@ -52,11 +53,18 @@ class WorldClock
         if set_timeout
             clearTimeout(@timeout) if @timeout
 
-            onetick = 1000 * WorldClock.time_speedx
+            onetick = 1000
+
+            if @time_speedx > 1
+                onetick = 1000 * 1 / @time_speedx
+            else if @time_speedx < 1
+                onetick = 1000 * (1 + @time_speedx)
 
             @timeout = setTimeout =>
                 @tick()
             , onetick
+
+            @on_tick_fn?()
 
     sync: ->
         #sync with a real server
@@ -175,5 +183,8 @@ class WorldClock
     subtract_time: (amount=1, of_what="seconds") ->
         @epoch_skewed = true
         @since_epoch -= WorldClock.duration amount, of_what
+
+    on_tick: (fn) ->
+        @on_tick_fn = fn
 
 World.WorldClock = WorldClock
