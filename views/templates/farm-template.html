@@ -10,12 +10,16 @@
             <% } else { %>
                 <a href="#" data-action="start_planting" class="btn">Plant Crop</a>
             <% } %>
-        <% } else if (_.indexOf(['tilling_soil', 'planting'], state.current()) > -1) { %>
+        <% } else if (_.indexOf(['tilling_soil', 'planting', 'growing'], state.current()) > -1) { %>
             <%=percent_complete%>% Complete
             <br />
             <%=planted_crops.length%> Crops Planted
         <% } else if (state.current() == "growing") { %>
             Growing
+        <% } else if (state.current() == "harvest"){ %>
+            <%=percent_complete%>% Complete
+            <br />
+            <%=crops_harvested%> crops Harvested
         <% } %>
     </div>
 </script>

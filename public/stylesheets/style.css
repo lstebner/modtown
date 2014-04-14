@@ -130,6 +130,12 @@
 #hud .list li:last-child {
   border-right: none;
 }
+#hud .list li p {
+  margin: 0;
+}
+#hud .list li p.small {
+  font-size: 14px;
+}
 .floating-menu {
   position: fixed;
   top: 30%;
