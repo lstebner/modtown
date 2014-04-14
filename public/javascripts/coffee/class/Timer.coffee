@@ -34,7 +34,7 @@ class Timer
 
         @on_tick?(@ticks)
 
-        @finish() if @duration > 0 && @ticks > @duration
+        @finish() if @duration > 0 && @ticks >= @duration
 
     update: ->
         @state.update()
@@ -58,7 +58,8 @@ class Timer
         Math.min 1, @ticks / @duration
 
     is_complete: ->
-        @state.current() == "complete"
+        # @state.current() == "complete"
+        @ticks >= @duration
 
     is_running: ->
         @state.current() == "running"
@@ -68,7 +69,7 @@ class Timer
         @state.change_state('complete')
 
     reset: ->
-        @ticks = 0
+        @ticks = 1
         @state.change_state('reset')
 
     set_duration: (new_dur, reset=false) ->
