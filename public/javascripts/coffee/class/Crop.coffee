@@ -7,10 +7,12 @@ class Crop extends RenderedObject
         @harvest_amount = @opts.harvest_amount
         @growth_rate = @opts.growth_rate
         @planting_rate = @opts.planting_rate
+        @harvest_rate = @opts.harvest_rate
         @needs_water = @opts.needs_water
         @type = @opts.type
         @spacing = 2
         @state_timer = new Timer()
+        @actual_harvest_amount = 0
 
         @state.change_state('idle')
         @is_planted = false
@@ -20,10 +22,11 @@ class Crop extends RenderedObject
         _.extend(
             super,
             can_grow_at_night: false
-            growth_rate: .03
+            growth_rate: .3
             planting_rate: .1
+            harvest_rate: .1
             drops_seeds: true
-            harvest_amount: 1
+            harvest_amount: [1, 3]
             needs_water: true
             type: ''
         )
@@ -39,6 +42,8 @@ class Crop extends RenderedObject
             when 'idle' then @idle()
             when 'planting' then @planting()
             when 'growing' then @growing()
+            when 'harvesting' then @harvesting()
+            when 'harvested' then @harvested()
             when 'fully_grown' then @fully_grown()
 
     plant_rate_to_ticks: ->
@@ -46,6 +51,9 @@ class Crop extends RenderedObject
 
     growth_rate_to_ticks: ->
         WorldClock.duration(100 * @growth_rate, 'seconds')
+
+    harvest_rate_to_ticks: ->
+        WorldClock.duration(100 * @harvest_rate, 'seconds')        
 
     idle: ->
 
@@ -70,6 +78,24 @@ class Crop extends RenderedObject
         @state.change_state('growing')
         @state_timer.set_duration @growth_rate_to_ticks(), true
 
+    calculate_harvest_amount: ->
+        Math.floor(Math.random() * @harvest_amount[1]) + @harvest_amount[0]
+
+    start_harvest: ->
+        @state.change_state('harvesting')
+        @state_timer.set_duration @harvest_rate_to_ticks(), true
+
+    harvesting: ->
+        @state_timer.update()
+
+        if @state_timer.is_complete()
+            @actual_harvest_amount = @calculate_harvest_amount()
+            console.log 'crop harvested', @actual_harvest_amount
+            @state.change_state('harvested')
+
+    harvested: ->
+        #do nothing state
+
     growing: (clock) ->
         #growth only happens periodically based on the growth_rate which is a 
         #chance to progress growth on any tick
@@ -79,7 +105,7 @@ class Crop extends RenderedObject
             if @current_growth > 100
                 @finish_growing()
 
-    growth_percent: ->
+    current_growth_percent: ->
         Math.min 1, @current_growth / 100
 
     finish_growing: ->
@@ -90,6 +116,12 @@ class Crop extends RenderedObject
 
     fully_grown: ->
         @state.current() == "fully_grown"
+
+    fully_harvested: ->
+        @state.current() == "harvested"
+
+    harvested_amount: ->
+        @actual_harvest_amount
 
 
 
