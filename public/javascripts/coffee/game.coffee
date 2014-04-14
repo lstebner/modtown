@@ -4,6 +4,11 @@ class ModTownGame extends RenderedObject
 
         @clock = new WorldClock()
 
+        _.defer =>
+            @flux_menu = new FluxMenu null,
+                clock: @clock
+
+
         @weather = new WeatherSystem()
 
         @state = new StateManager('init')
