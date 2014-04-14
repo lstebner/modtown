@@ -40,7 +40,7 @@ class Structure extends RenderedObject
         switch @state.current()
             when 'begin_construction' then @begin_construction(clock)
             when 'under_construction' then @progress_construction(clock)
-            when 'operating' then @operating()
+            else @operating(clock)
 
     progress_construction: (clock) ->
         @state_timer.update()
@@ -78,7 +78,7 @@ class Structure extends RenderedObject
 
         vdata
 
-    operating: ->
+    operating: (clock) ->
 
     render: ->
         if @state.current() == "under_construction"
