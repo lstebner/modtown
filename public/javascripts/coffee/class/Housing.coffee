@@ -35,7 +35,7 @@ class Housing extends Structure
         (@max_occupants - @occupants) / @max_occupants
 
     begin_construction: ->
-        @construction_time = WorldClock.duration(10, 'minutes')
+        @construction_time = WorldClock.duration(.10, 'minutes')
         super
 
     move_resident_in: (resident) ->
@@ -80,15 +80,3 @@ class Housing extends Structure
 
     template_id: ->
         '#housing-template'
-
-    setup_events: ->
-        @container.on 'click', (e) =>
-            e.preventDefault()
-            $el = $(e.target)
-
-            switch $el.data('action')
-                when 'launch_resident_menu'
-                    resident = @get_resident $el.data('id')
-                    resident_menu = new ResidentMenu null, 
-                        resident: resident
-                        open: true
