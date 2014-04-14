@@ -34,6 +34,7 @@ class Farm extends Structure
         @planted_crops = []
         @harvested_crops = []
         @crop_storage = {}
+        @total_crops_stored = 0
         @last_harvest_amount = 0
         @state_timer = new Timer()
 
@@ -63,6 +64,7 @@ class Farm extends Structure
             harvested_crops: @harvested_crops
             planted_crops: @planted_crops
             crops_harvested: @last_harvest_amount
+            crops_stored: @total_crops_stored
         )
 
     template_id: ->
@@ -239,6 +241,7 @@ class Farm extends Structure
                 @crop_storage[crop.type] = 0
 
             @crop_storage[crop.type] += crop.harvested_amount()
+            @total_crops_stored += crop.harvested_amount()
             @last_harvest_amount += crop.harvested_amount()
 
         @state.change_state('idle')

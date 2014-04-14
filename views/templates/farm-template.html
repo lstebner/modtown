@@ -10,16 +10,19 @@
             <% } else { %>
                 <a href="#" data-action="start_tilling" class="btn">Plant Crop</a>
             <% } %>
+
+            <% if (crops_stored > 0){ %>
+                <p><%=crops_stored%> Crops in Storage</p>
+            <% } %>
+
         <% } else if (_.indexOf(['tilling_soil', 'planting', 'growing'], state.current()) > -1) { %>
             <%=percent_complete%>% Complete
-            <br />
-            <%=planted_crops.length%> Crops Planted
+            <p><%=planted_crops.length%> Crops Planted</p>
         <% } else if (state.current() == "growing") { %>
             Growing
         <% } else if (state.current() == "harvest"){ %>
             <%=percent_complete%>% Complete
-            <br />
-            <%=crops_harvested%> crops Harvested
+            <p><%=crops_harvested%> <%=crop.name%> from harvest</p>
         <% } %>
     </div>
 </script>

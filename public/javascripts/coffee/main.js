@@ -2319,6 +2319,7 @@
       this.spacing = 2;
       this.state_timer = new Timer();
       this.actual_harvest_amount = 0;
+      this.value = this.opts.value;
       this.state.change_state('idle');
       this.is_planted = false;
       this.current_growth = 0;
@@ -2333,7 +2334,8 @@
         drops_seeds: true,
         harvest_amount: [1, 3],
         needs_water: true,
-        type: ''
+        type: '',
+        value: 1
       });
     };
 
@@ -2508,6 +2510,7 @@
       this.planted_crops = [];
       this.harvested_crops = [];
       this.crop_storage = {};
+      this.total_crops_stored = 0;
       this.last_harvest_amount = 0;
       this.state_timer = new Timer();
       this.plots_available();
@@ -2532,7 +2535,8 @@
         soil_ready: this.soil_ready,
         harvested_crops: this.harvested_crops,
         planted_crops: this.planted_crops,
-        crops_harvested: this.last_harvest_amount
+        crops_harvested: this.last_harvest_amount,
+        crops_stored: this.total_crops_stored
       });
     };
 
@@ -2735,6 +2739,7 @@
           this.crop_storage[crop.type] = 0;
         }
         this.crop_storage[crop.type] += crop.harvested_amount();
+        this.total_crops_stored += crop.harvested_amount();
         this.last_harvest_amount += crop.harvested_amount();
       }
       return this.state.change_state('idle');

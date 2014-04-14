@@ -13,6 +13,7 @@ class Crop extends RenderedObject
         @spacing = 2
         @state_timer = new Timer()
         @actual_harvest_amount = 0
+        @value = @opts.value
 
         @state.change_state('idle')
         @is_planted = false
@@ -22,13 +23,14 @@ class Crop extends RenderedObject
         _.extend(
             super,
             can_grow_at_night: false
-            growth_rate: .3
+            growth_rate: .9
             planting_rate: .1
             harvest_rate: .1
             drops_seeds: true
             harvest_amount: [1, 3]
             needs_water: true
             type: ''
+            value: 1
         )
 
     space_needed: ->
@@ -90,7 +92,6 @@ class Crop extends RenderedObject
 
         if @state_timer.is_complete()
             @actual_harvest_amount = @calculate_harvest_amount()
-            console.log 'crop harvested', @actual_harvest_amount
             @state.change_state('harvested')
 
     harvested: ->
