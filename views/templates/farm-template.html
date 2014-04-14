@@ -8,7 +8,7 @@
             <% if (crop == null){ %>
                 <a href="#" data-action="select_crop" class="btn">Select Crop to Plant</a>
             <% } else { %>
-                <a href="#" data-action="start_planting" class="btn">Plant Crop</a>
+                <a href="#" data-action="start_tilling" class="btn">Plant Crop</a>
             <% } %>
         <% } else if (_.indexOf(['tilling_soil', 'planting', 'growing'], state.current()) > -1) { %>
             <%=percent_complete%>% Complete

@@ -196,7 +196,6 @@ class Farm extends Structure
             total_growth_percent += c.current_growth_percent()
 
             if c.fully_grown()
-                console.log 'plant grown', c.id
                 @state_timer.update()
 
         @current_growth_percent = total_growth_percent / @planted_crops.length
@@ -207,6 +206,7 @@ class Farm extends Structure
     begin_harvest: ->
         @state.change_state('harvest')
         @state_timer.set_duration @harvest_time, true
+        @last_harvest_amount = 0
 
     harvest: (clock) ->
         #once we run out of plots, we are done planting
@@ -233,11 +233,13 @@ class Farm extends Structure
             @finish_harvest()
 
     finish_harvest: ->
+        @last_harvest_amount = 0
         while crop = @harvested_crops.shift()
             if !_.has @crop_storage, crop.type
                 @crop_storage[crop.type] = 0
 
             @crop_storage[crop.type] += crop.harvested_amount()
+            @last_harvest_amount += crop.harvested_amount()
 
         @state.change_state('idle')
 

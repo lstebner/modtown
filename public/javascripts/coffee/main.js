@@ -2327,7 +2327,7 @@
     Crop.prototype.default_opts = function() {
       return _.extend(Crop.__super__.default_opts.apply(this, arguments), {
         can_grow_at_night: false,
-        growth_rate: .3,
+        growth_rate: .9,
         planting_rate: .1,
         harvest_rate: .1,
         drops_seeds: true,
@@ -2414,7 +2414,6 @@
       this.state_timer.update();
       if (this.state_timer.is_complete()) {
         this.actual_harvest_amount = this.calculate_harvest_amount();
-        console.log('crop harvested', this.actual_harvest_amount);
         return this.state.change_state('harvested');
       }
     };
@@ -2695,7 +2694,6 @@
         c.update(clock);
         total_growth_percent += c.current_growth_percent();
         if (c.fully_grown()) {
-          console.log('plant grown', c.id);
           this.state_timer.update();
         }
       }
@@ -2707,7 +2705,8 @@
 
     Farm.prototype.begin_harvest = function() {
       this.state.change_state('harvest');
-      return this.state_timer.set_duration(this.harvest_time, true);
+      this.state_timer.set_duration(this.harvest_time, true);
+      return this.last_harvest_amount = 0;
     };
 
     Farm.prototype.harvest = function(clock) {
@@ -2730,11 +2729,13 @@
     };
 
     Farm.prototype.finish_harvest = function() {
+      this.last_harvest_amount = 0;
       while (crop = this.harvested_crops.shift()) {
         if (!_.has(this.crop_storage, crop.type)) {
           this.crop_storage[crop.type] = 0;
         }
         this.crop_storage[crop.type] += crop.harvested_amount();
+        this.last_harvest_amount += crop.harvested_amount();
       }
       return this.state.change_state('idle');
     };
