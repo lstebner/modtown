@@ -1,5 +1,4 @@
-# Helpers
-# @codekit-prepend "helper/Time.coffee"
+ 
 
 pin = (extra=null) ->
     console.log("Hit pin #{if this.id then this.id += 1 else this.id = 1}", extra)
