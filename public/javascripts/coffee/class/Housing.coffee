@@ -23,6 +23,7 @@ class Housing extends Structure
         _.extend(
             super,
             name: _next_house_name()
+            min_employees_to_operate: 0
         )
 
     has_vacancy: ->

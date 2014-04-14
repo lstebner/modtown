@@ -17,10 +17,12 @@ class Structure extends RenderedObject
         @built = false
         @employees = @opts.employees
         @max_employees = @opts.max_employees
+        @min_employees_to_operate = @opts.min_employees_to_operate
         @operating_cost = @opts.operating_cost
         @lifetime_operating_cost = 0
 
         @construction_tmpl = _.template $('#structure-under-construction-template').html()
+        @needs_workers_tmpl = _.template $('#structure-needs-workers-template').html()
 
         @change_state('begin_construction') if @opts.begin_construction
 
@@ -32,6 +34,7 @@ class Structure extends RenderedObject
             construction_time: WorldClock.duration 1, 'minutes'
             employees: []
             max_employees: 5
+            min_employees_to_operate: 1
             operating_cost: 10 #not yet implemented further than setting
         )
 
@@ -41,7 +44,12 @@ class Structure extends RenderedObject
         switch @state.current()
             when 'begin_construction' then @begin_construction(clock)
             when 'under_construction' then @progress_construction(clock)
-            else @operating(clock)
+            when 'needs_workers' then @needs_workers()
+            else 
+                if @min_employees_to_operate > 0 && @employees.length < @min_employees_to_operate
+                    return @state.change_state('needs_workers')
+                
+                @operating(clock)
 
     progress_construction: (clock) ->
         @state_timer.update()
@@ -93,11 +101,19 @@ class Structure extends RenderedObject
                     construction_percent_complete: @state_timer.percent_complete()
                     construction_time_nice: moment.duration(@construction_time_remaining, 'milliseconds').humanize()
 
+            when 'needs_workers'
+                vdata = 
+                    built: @built
+                    structure_id: @structure_id
             else
                 vdata = 
                     built: @built
 
         vdata
+
+    needs_workers: ->
+        if @min_employees_to_operate == 0 || @employees.length >= @min_employees_to_operate
+            @state.change_state('operating')
 
     operating: (clock) ->
 
@@ -105,5 +121,8 @@ class Structure extends RenderedObject
         if @state.current() == "under_construction"
             @container.empty()
             @container.html @construction_tmpl @get_view_data()
+        if @state.current() == "needs_workers"
+            @container.empty()
+            @container.html @needs_workers_tmpl @get_view_data()
         else
             super true
