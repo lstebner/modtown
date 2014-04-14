@@ -41,6 +41,7 @@ class WorldClock
         #skip ahead in time randomly somewhere in the next 10 years
         @since_epoch = WorldClock.duration Math.random() * 10, 'years'
         @epoch_skewed = false
+        @paused = false
 
         @timeout = null
         @timers = []
@@ -69,6 +70,8 @@ class WorldClock
         #sync with a real server
 
     update: ->
+        return if @paused
+
         @since_epoch += 1
 
         if @since_epoch < WorldClock.max_seconds
@@ -194,5 +197,11 @@ class WorldClock
 
     time_speed_default: ->
         @time_speedx = 1
+
+    pause_time: ->
+        @paused = true
+
+    resume_time: ->
+        @paused = false
 
 World.WorldClock = WorldClock
