@@ -35,7 +35,7 @@ class Housing extends Structure
         (@max_occupants - @occupants) / @max_occupants
 
     begin_construction: ->
-        @construction_time = WorldClock.duration(1, 'seconds')
+        @construction_time = WorldClock.duration(10, 'minutes')
         super
 
     move_resident_in: (resident) ->
