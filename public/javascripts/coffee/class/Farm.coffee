@@ -43,6 +43,7 @@ class Farm extends Structure
     default_opts: ->
         _.extend(
             super,
+            name: 'Skillet Farms'
             construction_time: WorldClock.duration 5, 'seconds'
             crop: null
             available_crops: []
@@ -56,6 +57,7 @@ class Farm extends Structure
 
         _.extend(
             super,
+            num_employees: @employees.length
             crop: @crop
             crop_state: @crop_state
             state: @state
@@ -247,8 +249,6 @@ class Farm extends Structure
 
     replant: ->
         @state.change_state('.planting')
-
-    employ_resident: (resident) ->
 
     get_stored_crops: ->
         @crop_storage

@@ -27,6 +27,7 @@ class Structure extends RenderedObject
     default_opts: ->
         _.extend(
             super,
+            name: 'Structure'
             begin_construction: true
             construction_time: WorldClock.duration 1, 'minutes'
             employees: []
@@ -60,6 +61,26 @@ class Structure extends RenderedObject
     finish_construction: ->
         @state.change_state('operating')
         @built = true
+
+    employ_resident: (resident) ->
+        return false if resident.is_employed() || @employees.length == @max_employees
+
+        resident.set_employer @name
+        @employees.push resident
+
+    fire_resident: (id) ->
+        remove_key = -1
+
+        for r, key in @employees
+            if r.id == id
+                remove_key = key
+
+        if remove_key > -1
+            e = @employees.splice remove_key, 1
+            e[0]?.set_employer null
+
+    has_jobs_available: ->
+        !!(@max_employees > 0 && @employees.length < @max_employees && !@is_under_construction())
 
     get_view_data: ->
         vdata = {}

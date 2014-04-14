@@ -1,7 +1,7 @@
 class Town extends RenderedObject
     @costs: 
         street: 100
-    @extra_visitors: false
+    @extra_visitors: true
     @visitor_chance: if Town.extra_visitors then .15 else .05
     @visitors_all_day: true
 
@@ -147,7 +147,15 @@ class Town extends RenderedObject
         return unless visitor
 
         @residents.push visitor
+        @resident_ids_to_index[visitor.id] = @residents.length - 1
         @remove_visitor visitor_id
+
+    get_resident: (id) ->
+        if !_.has @resident_ids_to_index, id
+            throw('resident ID not found')
+            return false
+
+        @residents[@resident_ids_to_index[id]]
 
     render_streets: ->
         for s in @streets
@@ -234,6 +242,7 @@ class Town extends RenderedObject
 
                     build_menu.container.one 'item_selected', (e, selection) =>
                         $el.hide()
+
                 when 'launch_visitor_menu'
                     $el.addClass('active')
                     @selected_visitor = $el.data('index')
@@ -247,6 +256,13 @@ class Town extends RenderedObject
                     visitor_menu.container.one 'destroy', =>
                         @selected_visitor = null
 
+                when 'launch_resident_menu'
+                    resident = @get_resident $el.data('id')
+                    resident_menu = new ResidentMenu null, 
+                        resident: resident
+                        available_jobs: @get_available_jobs()
+                        open: true
+
     get_housing: (only_vacant=false) ->
         return unless _.has @structures_by_type, 'housing'
         housing = @structures_by_type['housing']
@@ -257,6 +273,14 @@ class Town extends RenderedObject
             results.push(s) if !only_vacant || s.has_vacancy()
 
         results
+
+    get_available_jobs: ->
+        jobs = []
+        for s in @structures
+            jobs.push(s) if s.has_jobs_available()
+
+        jobs
+            
 
 
 

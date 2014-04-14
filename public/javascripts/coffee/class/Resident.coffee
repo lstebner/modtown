@@ -68,7 +68,7 @@ class Resident extends RenderedObject
     work: (clock) ->
         now = clock.since_midnight()
 
-        if now > @work_schedule.leave_work
+        if !@is_employed() || now > @work_schedule.leave_work
             @change_state('idle')
 
     idle: (clock) ->
@@ -78,5 +78,12 @@ class Resident extends RenderedObject
             @change_state('goto_bed')
         else if @employer && now > @work_schedule.goto_work
             @change_state('goto_work')
+
+    is_employed: ->
+        @employer != null
+
+    set_employer: (employer) ->
+        @employer = employer
+
 
 World.Resident = Resident
