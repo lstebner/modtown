@@ -33,6 +33,7 @@ class Farm extends Structure
         @current_growth_percent = 0
         @planted_crops = []
         @harvested_crops = []
+        @crop_storage = {}
         @last_harvest_amount = 0
         @state_timer = new Timer()
 
@@ -47,7 +48,7 @@ class Farm extends Structure
         )
 
     get_view_data: ->
-        if @state.current() == "growing"
+        percent_complete = if @state.current() == "growing"
             @current_growth_percent
         else
             @state_timer.percent_complete()
@@ -232,7 +233,11 @@ class Farm extends Structure
             @finish_harvest()
 
     finish_harvest: ->
-        #TODO: store harvested crops
+        while crop = @harvested_crops.shift()
+            if !_.has @crop_storage, crop.type
+                @crop_storage[crop.type] = 0
+
+            @crop_storage[crop.type] += crop.harvested_amount()
 
         @state.change_state('idle')
 
@@ -244,6 +249,14 @@ class Farm extends Structure
         @state.change_state('.planting')
 
     employ_resident: (resident) ->
+
+    get_stored_crops: ->
+        @crop_storage
+
+    get_stored_crop_amount: (crop) ->
+        return 0 unless _.has @crop_storage, crop
+
+        @crop_storage[crop]
 
 
 

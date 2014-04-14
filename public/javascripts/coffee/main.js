@@ -2508,6 +2508,7 @@
       this.current_growth_percent = 0;
       this.planted_crops = [];
       this.harvested_crops = [];
+      this.crop_storage = {};
       this.last_harvest_amount = 0;
       this.state_timer = new Timer();
       this.plots_available();
@@ -2522,11 +2523,8 @@
     };
 
     Farm.prototype.get_view_data = function() {
-      if (this.state.current() === "growing") {
-        this.current_growth_percent;
-      } else {
-        this.state_timer.percent_complete();
-      }
+      var percent_complete;
+      percent_complete = this.state.current() === "growing" ? this.current_growth_percent : this.state_timer.percent_complete();
       return _.extend(Farm.__super__.get_view_data.apply(this, arguments), {
         crop: this.crop,
         crop_state: this.crop_state,
@@ -2732,6 +2730,12 @@
     };
 
     Farm.prototype.finish_harvest = function() {
+      while (crop = this.harvested_crops.shift()) {
+        if (!_.has(this.crop_storage, crop.type)) {
+          this.crop_storage[crop.type] = 0;
+        }
+        this.crop_storage[crop.type] += crop.harvested_amount();
+      }
       return this.state.change_state('idle');
     };
 
@@ -2745,6 +2749,17 @@
     };
 
     Farm.prototype.employ_resident = function(resident) {};
+
+    Farm.prototype.get_stored_crops = function() {
+      return this.crop_storage;
+    };
+
+    Farm.prototype.get_stored_crop_amount = function(crop) {
+      if (!_.has(this.crop_storage, crop)) {
+        return 0;
+      }
+      return this.crop_storage[crop];
+    };
 
     return Farm;
 
