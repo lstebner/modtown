@@ -93,6 +93,8 @@ class Farm extends Structure
                 when 'start_tilling' then @state.change_state('start_tilling')
 
     operating: (clock) ->
+        super
+        
         switch @state.current()
             #Structure triggers this one by default when construction completes
             when 'operating' then @state.change_state('idle')

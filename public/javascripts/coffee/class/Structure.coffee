@@ -104,7 +104,7 @@ class Structure extends RenderedObject
             when 'needs_workers'
                 vdata = 
                     built: @built
-                    structure_id: @structure_id
+                    structure_id: @id
             else
                 vdata = 
                     built: @built

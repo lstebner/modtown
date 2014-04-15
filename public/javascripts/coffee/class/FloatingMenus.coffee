@@ -5,5 +5,6 @@
 # @codekit-append "../menus/SelectHouseMenu.coffee"
 # @codekit-append "../menus/VisitorMenu.coffee"
 # @codekit-append "../menus/SelectJobMenu.coffee"
+# @codekit-append "../menus/HireWorkersMenu.coffee"
 
 

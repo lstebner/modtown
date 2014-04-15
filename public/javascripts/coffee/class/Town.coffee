@@ -263,6 +263,15 @@ class Town extends RenderedObject
                         available_jobs: @get_available_jobs()
                         open: true
 
+                when 'launch_hire_workers_menu'
+                    structure_id = $el.data('structure-id')
+                    if _.has @structure_ids_to_index, structure_id
+                        structure = @structures[@structure_ids_to_index[structure_id]]
+                        hire_workers_menu = new HireWorkersMenu null, 
+                            job: structure
+                            workers: @get_available_workers()
+                            open: true
+
     get_housing: (only_vacant=false) ->
         return unless _.has @structures_by_type, 'housing'
         housing = @structures_by_type['housing']
@@ -280,6 +289,13 @@ class Town extends RenderedObject
             jobs.push(s) if s.has_jobs_available()
 
         jobs
+
+    get_available_workers: ->
+        workers = []
+        for r in @residents
+            workers.push(r) if !r.is_employed()
+
+        workers
             
 
 
