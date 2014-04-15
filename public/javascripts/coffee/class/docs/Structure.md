@@ -82,3 +82,34 @@ myStructure = new Structure({
     begin_construction: true
 })
 ```
+
+#### Subclassing (coffee)
+
+```coffeescript
+class ShoeFactory extends Structure
+    default_opts: ->
+        _.extend(
+            super,
+            type: 'factory'
+            name: 'Shoe Factory'
+            max_employees: 10
+            cost: 99
+            operating_cost: 15
+            construction_time: WorldClock.duration(12, 'hours')
+        )
+
+    operating: (clock) ->
+        @state.update()
+
+        switch @state.current()
+            when 'sewing_shoes' then @sew_shoes()
+            when 'tie_laces' then @tie_laces()
+            when 'pack_boxes' then @pack_boxes()
+
+    sew_shows: ->
+
+    tie_laces: ->
+
+    pack_boxes: ->
+
+```
