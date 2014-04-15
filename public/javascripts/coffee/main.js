@@ -2684,10 +2684,6 @@
 
     Crop.prototype.idle = function() {};
 
-    Crop.prototype.planting_time = function() {
-      return WorldClock.duration(1, 'minutes') * this.planting_rate;
-    };
-
     Crop.prototype.reset_growth = function() {};
 
     Crop.prototype.start_planting = function() {
@@ -2946,7 +2942,7 @@
 
     Farm.prototype.start_tilling = function() {
       this.state.change_state('tilling_soil');
-      return this.state_timer.set_duration(this.till_soil_time, true);
+      return this.state_timer.set_duration(this.till_soil_time * (1 - this.employees.length * .05), true);
     };
 
     Farm.prototype.till_soil = function(clock) {
