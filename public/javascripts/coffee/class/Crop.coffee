@@ -59,9 +59,6 @@ class Crop extends RenderedObject
 
     idle: ->
 
-    planting_time: ->
-        WorldClock.duration(1, 'minutes') * @planting_rate
-
     reset_growth: ->
 
     start_planting: ->
