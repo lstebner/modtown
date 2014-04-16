@@ -17,6 +17,9 @@ class DeliveryTruck
 
         @state = new StateManager('idle')
 
+    update: (clock) ->
+        @state.update()
+
     begin_loading: ->
         @state.change_state('loading')
 
@@ -46,4 +49,10 @@ class DeliveryTruck
         @state.change_state('parked')
 
     is_parked: ->
-        @state.current_state() == "parked"
+        @state.current() == "parked"
+
+    is_in_service: ->
+        true
+
+    is_available: ->
+        @is_parked() && @is_in_service()
