@@ -1,6 +1,7 @@
 # @codekit-append "Farm.coffee"
 # @codekit-append "Factory.coffee"
 # @codekit-append "Housing.coffee"
+# @codekit-append "Warehouse.coffee"
 
 class Structure extends RenderedObject
     constructor: ->
@@ -109,6 +110,7 @@ class Structure extends RenderedObject
                 vdata = 
                     built: @built
 
+        vdata.state = @state
         vdata
 
     needs_workers: ->
@@ -120,8 +122,8 @@ class Structure extends RenderedObject
     render: ->
         if @state.current() == "under_construction"
             @container.empty()
-            @container.html @construction_tmpl @get_view_data()
-        if @state.current() == "needs_workers"
+            @container.html @construction_tmpl(@get_view_data())
+        else if @state.current() == "needs_workers"
             @container.empty()
             @container.html @needs_workers_tmpl @get_view_data()
         else

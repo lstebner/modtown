@@ -1,3 +1,16 @@
+.window-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(200, 200, 200, 0.4);
+  box-shadow: inset 0px 0px 20px -6px #888888;
+}
+.window-overlay.show {
+  display: block;
+}
 .btn {
   display: inline-block;
   min-width: 60px;
@@ -136,7 +149,7 @@
 #hud .list li p.small {
   font-size: 14px;
 }
-.floating-menu {
+.popup {
   position: fixed;
   top: 30%;
   left: 40%;
@@ -149,32 +162,36 @@
   background-color: #fafafa;
   border-radius: 5px;
 }
-.floating-menu .titlebar {
+.popup .titlebar {
   font-size: 18px;
   border-bottom: 1px solid #888;
   padding: 16px 18px;
   color: #555;
 }
-.floating-menu .titlebar .close {
+.popup .titlebar .close {
   float: right;
   text-decoration: none;
   font-weight: bold;
   color: #ccc;
 }
-.floating-menu .titlebar .close:hover {
+.popup .titlebar .close:hover {
   color: #888;
 }
-.floating-menu .body {
+.popup .message {
+  padding: 16px 18px 0;
+  font-size: 14px;
+}
+.popup .body {
   background-color: #f8f8f8;
   padding: 16px 18px;
 }
-.floating-menu .body ul li {
+.popup .body ul li {
   margin: 12px 0;
 }
-.floating-menu .body ul li:first-child {
+.popup .body ul li:first-child {
   margin-top: 0;
 }
-.floating-menu .body ul li:last-child {
+.popup .body ul li:last-child {
   margin-bottom: 0;
 }
 .structure .housing .occupants {

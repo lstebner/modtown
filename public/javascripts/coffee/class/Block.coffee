@@ -1,9 +1,11 @@
 class Block extends RenderedObject
     @costs: 
         excavation: 50
-        housing: 4
-        farm: 5
-        factory: 5
+        housing: 14
+        farm: 15
+        factory: 25
+        warehouse: 18
+
     constructor: ->
         super
 
@@ -27,6 +29,7 @@ class Block extends RenderedObject
             when 'housing' then @build_housing()
             when 'farm' then @build_farm()
             when 'factory' then @build_factory()
+            when 'warehouse' then @build_warehouse()
 
         @container.find('.build_actions').remove()
         @container.find('.structure').show()
@@ -42,12 +45,10 @@ class Block extends RenderedObject
     build_factory: ->
         @structure = new Factory @container.find('.structure')
 
-    setup_events: ->
-    #     @container.on 'click', (e) =>
-    #         e.preventDefault()
-    #         $el = $(e.target)
+    build_warehouse: ->
+        @structure = new Warehouse @container.find('.structure')
 
-    #         switch $el.data('action')
-    #             when 'build_structure' then @build_structure $el.data('value')
+    setup_events: ->
+    
 
 World.Block = Block

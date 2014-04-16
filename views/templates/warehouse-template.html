@@ -1,0 +1,11 @@
+<script type="text/template" id="warehouse-template">
+    <div class="warehouse">
+        Warehouse (<%=state.current()%>)
+
+        <% if (!built){ %>
+            (not yet built)
+        <% } else if (state.current() == "idle"){ %>
+            (idle)
+        <% } %>
+    </div>
+</script>

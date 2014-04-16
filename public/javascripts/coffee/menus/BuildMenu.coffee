@@ -17,6 +17,7 @@ class BuildMenu extends FloatingMenu
                 build_farm: "Build Farm"
                 build_factory: "Build Factory"
                 build_housing: "Build Housing"
+                build_warehoue: "Build Warehouse"
         )
 
 
@@ -28,5 +29,6 @@ class BuildMenu extends FloatingMenu
                 when 'build_farm' then @town.build_structure 'farm', @street_id, @block_id
                 when 'build_factory' then @town.build_structure 'factory', @street_id, @block_id
                 when 'build_housing' then @town.build_structure 'housing', @street_id, @block_id
+                when 'build_warehoue' then @town.build_structure 'warehouse', @street_id, @block_id
 
             @destroy()
