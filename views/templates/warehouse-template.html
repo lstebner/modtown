@@ -4,8 +4,10 @@
 
         <% if (!built){ %>
             (not yet built)
-        <% } else if (state.current() == "idle"){ %>
-            (idle)
+        <% } else if (state.current() == "operating"){ %>
+            <p>
+                <%=trucks_available%> Truck<%=trucks_available > 1 ? 's' : ''%> Available
+            </p>
         <% } %>
     </div>
 </script>

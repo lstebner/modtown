@@ -24,15 +24,28 @@ class Warehouse extends Structure
             max_employees: 5
         )
 
+    get_view_data: ->
+        _.extend(
+            super,
+            trucks_available: @num_trucks_available()
+        )
+
     template_id: ->
         '#warehouse-template'
 
     operating: (clock) ->
         return if @is_under_construction()
 
+        @update_trucks(clock)
+
+    update_trucks: (clock) ->
+        for t in @trucks
+            t.update(clock)
+
     setup_delivery_trucks: ->
         for i in [1..@num_trucks]
             new_truck = new DeliveryTruck()
+            new_truck.park()
 
             @trucks.push(new_truck)
 
@@ -72,4 +85,12 @@ class Warehouse extends Structure
     is_over_capacity: ->
         @total_stored > @storage_capacity
 
+    num_trucks_available: ->
+        return 0 if !@trucks.length
+
+        count = 0
+        for t in @trucks
+            count += 1 if t.is_available()
+
+        Math.min @employees.length, count
 

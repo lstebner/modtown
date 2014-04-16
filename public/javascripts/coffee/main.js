@@ -3451,6 +3451,10 @@
       this.state = new StateManager('idle');
     }
 
+    DeliveryTruck.prototype.update = function(clock) {
+      return this.state.update();
+    };
+
     DeliveryTruck.prototype.begin_loading = function() {
       return this.state.change_state('loading');
     };
@@ -3490,7 +3494,15 @@
     };
 
     DeliveryTruck.prototype.is_parked = function() {
-      return this.state.current_state() === "parked";
+      return this.state.current() === "parked";
+    };
+
+    DeliveryTruck.prototype.is_in_service = function() {
+      return true;
+    };
+
+    DeliveryTruck.prototype.is_available = function() {
+      return this.is_parked() && this.is_in_service();
     };
 
     return DeliveryTruck;
@@ -3527,14 +3539,32 @@
       });
     };
 
+    Warehouse.prototype.get_view_data = function() {
+      return _.extend(Warehouse.__super__.get_view_data.apply(this, arguments), {
+        trucks_available: this.num_trucks_available()
+      });
+    };
+
     Warehouse.prototype.template_id = function() {
       return '#warehouse-template';
     };
 
     Warehouse.prototype.operating = function(clock) {
       if (this.is_under_construction()) {
-
+        return;
       }
+      return this.update_trucks(clock);
+    };
+
+    Warehouse.prototype.update_trucks = function(clock) {
+      var t, _i, _len, _ref3, _results;
+      _ref3 = this.trucks;
+      _results = [];
+      for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
+        t = _ref3[_i];
+        _results.push(t.update(clock));
+      }
+      return _results;
     };
 
     Warehouse.prototype.setup_delivery_trucks = function() {
@@ -3542,6 +3572,7 @@
       _results = [];
       for (i = _i = 1, _ref3 = this.num_trucks; 1 <= _ref3 ? _i <= _ref3 : _i >= _ref3; i = 1 <= _ref3 ? ++_i : --_i) {
         new_truck = new DeliveryTruck();
+        new_truck.park();
         _results.push(this.trucks.push(new_truck));
       }
       return _results;
@@ -3599,6 +3630,22 @@
 
     Warehouse.prototype.is_over_capacity = function() {
       return this.total_stored > this.storage_capacity;
+    };
+
+    Warehouse.prototype.num_trucks_available = function() {
+      var count, t, _i, _len, _ref3;
+      if (!this.trucks.length) {
+        return 0;
+      }
+      count = 0;
+      _ref3 = this.trucks;
+      for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
+        t = _ref3[_i];
+        if (t.is_available()) {
+          count += 1;
+        }
+      }
+      return Math.min(this.employees.length, count);
     };
 
     return Warehouse;
