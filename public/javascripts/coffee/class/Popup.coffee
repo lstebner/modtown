@@ -1,5 +1,13 @@
 class Popup extends RenderedObject
-    constructor: ->
+    @Create: (opts={}) ->
+        opts = _.extend { open:true }, opts
+        new Popup null, opts
+
+    @CreateModal: (opts={}) ->
+        opts = _.extend { open:true, is_modal:true }, opts
+        new Popup null, opts
+
+    constructor: (container, opts={}) ->
         super
 
         if !@container.length
@@ -141,6 +149,5 @@ class Popup extends RenderedObject
         super
 
         @render_body() if @body_template
-
 
 World.Popup = Popup

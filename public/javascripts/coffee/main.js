@@ -811,7 +811,31 @@
   Popup = (function(_super) {
     __extends(Popup, _super);
 
-    function Popup() {
+    Popup.Create = function(opts) {
+      if (opts == null) {
+        opts = {};
+      }
+      opts = _.extend({
+        open: true
+      }, opts);
+      return new Popup(null, opts);
+    };
+
+    Popup.CreateModal = function(opts) {
+      if (opts == null) {
+        opts = {};
+      }
+      opts = _.extend({
+        open: true,
+        is_modal: true
+      }, opts);
+      return new Popup(null, opts);
+    };
+
+    function Popup(container, opts) {
+      if (opts == null) {
+        opts = {};
+      }
       Popup.__super__.constructor.apply(this, arguments);
       if (!this.container.length) {
         this.container = $('<div/>').addClass('popup');
