@@ -9,6 +9,8 @@ pin = (extra=null) ->
 # @codekit-prepend "class/WorldClock.coffee"
 # @codekit-prepend "class/WeatherSystem.coffee"
 # @codekit-prepend "class/RenderedObject.coffee"
+# @codekit-prepend "class/Overlay.coffee"
+# @codekit-prepend "class/Popup.coffee"
 # @codekit-prepend "class/FloatingMenu.coffee"
 # @codekit-prepend "class/FloatingMenus.coffee"
 # @codekit-prepend "class/Alert.coffee"
@@ -24,3 +26,5 @@ pin = (extra=null) ->
 # Execution Stuff
 # @codekit-append "game.coffee"
 
+$ ->
+    World?.window_overlay = new Overlay '.window-overlay'
