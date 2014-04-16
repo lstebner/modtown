@@ -24,7 +24,6 @@ class HireWorkersMenu extends FloatingMenu
         )
 
     trigger: (event_name='item_selected', value) ->
-        console.log value
         if event_name == 'item_selected'
             @assign_worker_to_job parseInt value
 
@@ -34,9 +33,17 @@ class HireWorkersMenu extends FloatingMenu
         worker = null
         for w in @workers
             worker = w if w.id = worker_id
-        console.log worker, @job
 
         return unless worker
 
         @job.employ_resident worker
         @destroy()
+
+    render: ->
+        if @items?
+            @message = if _.isEmpty @items
+                'No Workers Available'
+            else
+                ''
+
+        super

@@ -915,6 +915,12 @@
       return this.container.trigger('title_changed');
     };
 
+    Popup.prototype.set_message = function(new_message) {
+      this.message = new_message;
+      this.set_view_data('message', this.message);
+      return this.render(true);
+    };
+
     Popup.prototype.set_position = function(x, y) {
       return this.container.css({
         top: y,
@@ -1565,7 +1571,6 @@
       if (event_name == null) {
         event_name = 'item_selected';
       }
-      console.log(value);
       if (event_name === 'item_selected') {
         return this.assign_worker_to_job(parseInt(value));
       }
@@ -1584,12 +1589,18 @@
           worker = w;
         }
       }
-      console.log(worker, this.job);
       if (!worker) {
         return;
       }
       this.job.employ_resident(worker);
       return this.destroy();
+    };
+
+    HireWorkersMenu.prototype.render = function() {
+      if (this.items != null) {
+        this.message = _.isEmpty(this.items) ? 'No Workers Available' : '';
+      }
+      return HireWorkersMenu.__super__.render.apply(this, arguments);
     };
 
     return HireWorkersMenu;

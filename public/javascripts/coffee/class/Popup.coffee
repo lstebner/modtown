@@ -80,7 +80,7 @@ class Popup extends RenderedObject
     destroy: ->
         if @is_modal
             World.window_overlay.hide()
-            
+
         @container.trigger('destroy').hide()
         @container.unbind().remove()
 
@@ -89,6 +89,11 @@ class Popup extends RenderedObject
         @set_view_data 'title', @title
         @render(true)
         @container.trigger('title_changed')
+
+    set_message: (new_message) ->
+        @message = new_message
+        @set_view_data 'message', @message
+        @render(true)
 
     #move the menu to a certain position
     set_position: (x, y) ->
