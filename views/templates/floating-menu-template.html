@@ -1,14 +1,21 @@
-<script type="text/template" id="floating-menu-template">
+<script type="text/template" id="popup-template">
     <div class="titlebar">
         <a class="close" href="#" data-action="cancel">x</a>
         <%=title%>
     </div>
+    <% if (!_.isEmpty(message)){ %>
+        <div class="message">
+            <%=message%>
+        </div>
+    <% } %>
     <div class="body">
-        <ul class="unstyled items">
-            <% _.each(items, function(item_text, action){ %>
-                <li>
-                    <a href="#" class="btn block" data-action="<%=action%>"><%=item_text%></a>
-            <% }); %>
-        </ul>
-    </div>
+</script>
+
+<script type="text/template" id="floating-menu-template">
+    <ul class="unstyled items">
+        <% _.each(items, function(item_text, action){ %>
+            <li>
+                <a href="#" class="btn block" data-action="<%=action%>"><%=item_text%></a>
+        <% }); %>
+    </ul>
 </script>
