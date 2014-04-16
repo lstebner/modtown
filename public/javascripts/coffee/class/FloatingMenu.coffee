@@ -1,68 +1,22 @@
-class FloatingMenu extends RenderedObject
+class FloatingMenu extends Popup
     constructor: ->
         super
 
-        if !@container.length
-            @container = $('<div/>').addClass('floating-menu')
-            $('body').append @container.hide()
-
-        @title = @opts.title
-        @items = @opts.items
-
-        @default_position = @container.position()
-
-        @setup_events()
-
-        @open() if @opts.open
+        @set_items @opts.items
 
     default_opts: ->
         _.extend(
             super,
-            title: 'Floating Menu'
+            message: ''
             items: []
-            open: false
+            body_template: '#floating-menu-template'
         )
-        
-
-    template_id: ->
-        '#floating-menu-template'
-
-    setup_events: ->
-        return unless @container.length
-
-        @container.on 'click', (e) =>
-            e.preventDefault()
-
-            $el = $(e.target)
-
-            if $el.is('[data-action=cancel]')
-                @close()
-                return @trigger 'cancel'
-
-            return if $el.data('disabled')
-
-            @trigger 'item_selected', $el.data('action')
-
+    
     get_view_data: ->
         _.extend(
             super,
-            title: @title
             items: @items
         )
-
-    #close the menu
-    close: ->
-        @container.hide().trigger('close')
-
-    #open the menu
-    open: ->
-        @render(true)
-        @container.show().trigger('open')
-
-    #close, unbind and remove the menu
-    destroy: ->
-        @container.trigger('destroy').hide()
-        @container.unbind().remove()
 
     set_items: (new_items) ->
         @items = new_items
@@ -70,47 +24,15 @@ class FloatingMenu extends RenderedObject
         @render(true)
         @container.trigger('items_changed')
 
-    set_title: (new_title) ->
-        @title = new_title
-        @set_view_data 'title', @title
-        @render(true)
-        @container.trigger('title_changed')
+    setup_events: ->
+        super
 
-    #move the menu to a certain position
-    set_position: (x, y) ->
-        @container.css
-            top: y
-            left: x
+        @container.on 'click', (e) =>
+            $el = $(e.target)
 
-    #set the position to the closest point deemed safe to 
-    #the passed in x,y coordinates
-    best_position_for: (x, y) ->
-        x_padding = 100
-        y_padding = -@container.height() / 3
-
-        right_edge = x + @container.width() + x_padding
-        #check if there is not enough room to the right
-        if right_edge > $(window).width()
-            #and then set it to the left
-            x = x - @container.width() - x_padding
-        #otherwise set it to the right
-        else
-            x += x_padding
-
-        #don't go below 0
-        if y + y_padding < 0
-            y = y_padding
-        #don't go over window height
-        else if y + y_padding > $(window).height()
-            y = $(window).height() - @container.height() - y_padding
-        #safe
-        else
-            y += y_padding
-
-        @set_position x, y
-
-    trigger: (event_name='item_selected', value) ->
-        @container.trigger event_name, value
+            if $el.is('.btn')
+                @trigger 'item_selected', $el.data('action')
+            
 
 
 World.FloatingMenu = FloatingMenu

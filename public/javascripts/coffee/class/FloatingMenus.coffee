@@ -1,3 +1,4 @@
+# @codekit-append "../menus/Confirm.coffee"
 # @codekit-append "../menus/BuildMenu.coffee"
 # @codekit-append "../menus/FluxMenu.coffee"
 # @codekit-append "../menus/ResidentMenu.coffee"
