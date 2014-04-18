@@ -90,8 +90,12 @@ class Block extends RenderedObject
         @settings_menu.open()
 
     settings_item_selected: (name) ->
+        @structure.settings_item_selected(name) if @structure
+
         switch (name)
             when 'close' then @settings_menu.close()
+
+        #todo: consider always closing when an item is selected
 
     setup_events: ->
         @container.on 'click', (e) =>

@@ -114,6 +114,9 @@ class Structure extends RenderedObject
     settings_menu_items: ->
         close: 'Close'
 
+    #meant to be subclasses as well for handling specific events
+    settings_item_selected: (name) ->
+
     get_view_data: ->
         vdata = {}
 

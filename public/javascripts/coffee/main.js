@@ -2619,6 +2619,9 @@
     };
 
     Block.prototype.settings_item_selected = function(name) {
+      if (this.structure) {
+        this.structure.settings_item_selected(name);
+      }
       switch (name) {
         case 'close':
           return this.settings_menu.close();
@@ -2904,6 +2907,8 @@
         close: 'Close'
       };
     };
+
+    Structure.prototype.settings_item_selected = function(name) {};
 
     Structure.prototype.get_view_data = function() {
       var vdata;
