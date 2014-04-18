@@ -76,6 +76,9 @@ class Popup extends RenderedObject
 
         @container.hide().trigger('close')
 
+    hide: ->
+        @close()
+
     #open the menu
     open: ->
         if @is_modal
@@ -83,6 +86,9 @@ class Popup extends RenderedObject
 
         @render(true)
         @container.show().trigger('open')
+
+    show: ->
+        @open()
 
     #close, unbind and remove the menu
     destroy: ->
