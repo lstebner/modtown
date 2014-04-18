@@ -1,6 +1,6 @@
 <script type="text/template" id="housing-template">
     <div class="housing">
-        <% if (structure){ %>
+        <% if (structure && structure.built){ %>
             <h3><%=structure.name%></h3>
             Occupancy: <%=structure.occupants%> / <%=structure.max_occupants%> (<%=Math.round(structure.occupancy_percent() * 100)%>%)
 

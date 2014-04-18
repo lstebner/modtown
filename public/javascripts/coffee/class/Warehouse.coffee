@@ -33,10 +33,25 @@ class Warehouse extends Structure
     template_id: ->
         '#warehouse-template'
 
+    settings_menu_items: ->
+        view_info: 'Stats'
+        close: 'Close'
+
     operating: (clock) ->
         return if @is_under_construction()
 
         @update_trucks(clock)
+
+        # are there any new pickup requests? 
+            # are there any trucks available with drivers?
+                # send the driver on the pickup
+
+        # do the same thing for deliveries
+
+        # potenital problems:
+            # with this setup, pickups will always get priority over deliveries
+                # this could potentially be a toggle
+                # this could also be solved with some alternating logic
 
     update_trucks: (clock) ->
         for t in @trucks
@@ -59,12 +74,15 @@ class Warehouse extends Structure
 
     queue_delivery: (where) ->
 
-    goto_next_delivery: ->
-        return false unless @delivery_queue.length
+    send_truck_to_delivery: (delivery) ->
+
+    send_truck_to_next_delivery: ->
 
     queue_pickup: (where) ->
 
-    goto_next_pickup: ->
+    send_truck_to_pickup: (loc) ->
+
+    send_truck_to_next_pickup: ->
         return false unless @pickup_queue.length
 
     store: (what, how_many) ->

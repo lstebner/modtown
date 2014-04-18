@@ -1,0 +1,1 @@
+class StructureMenu extends FloatingMenu

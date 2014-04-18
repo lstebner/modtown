@@ -50,6 +50,8 @@ class Farm extends Structure
         )
 
     get_view_data: ->
+        return super if @is_under_construction()
+
         percent_complete = if @state.current() == "growing"
             @current_growth_percent
         else
@@ -71,6 +73,11 @@ class Farm extends Structure
 
     template_id: ->
         '#farm-template'
+
+    settings_menu_items: ->
+        view_info: 'Stats'
+        change_crop: 'Change Crop'
+        close: 'Close'
 
     begin_construction: ->
         @construction_time = WorldClock.duration(10, 'seconds')

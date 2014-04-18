@@ -7,5 +7,6 @@
 # @codekit-append "../menus/VisitorMenu.coffee"
 # @codekit-append "../menus/SelectJobMenu.coffee"
 # @codekit-append "../menus/HireWorkersMenu.coffee"
+# @codekit-append "../menus/StructureMenu.coffee"
 
 

@@ -52,7 +52,7 @@ class Street extends RenderedObject
         return unless @num_blocks < @max_blocks
 
         props = @_block_props props
-        $new_block = @block_tmpl({ id: props.id })
+        $new_block = $('<div/>').addClass('block').attr('data-id', props.id)
         @container.find('.blocks').append($new_block)
         new_block = new Block @container.find(".block[data-id=#{props.id}]"), props
         @blocks.push new_block
@@ -68,7 +68,6 @@ class Street extends RenderedObject
         new_structure = @blocks[block_idx].build_structure type
         @structures.push new_structure
         @structure_ids_to_index[new_structure.id] = @structures.length - 1
-
         new_structure
 
     setup_events: ->

@@ -26,6 +26,12 @@ class Housing extends Structure
             min_employees_to_operate: 0
         )
 
+    settings_menu_items: ->
+        view_info: 'Stats'
+        view_occupants: 'Occupants'
+        destroy: 'Destroy'
+        close: 'Close'
+
     has_vacancy: ->
         !@is_under_construction() && @occupants < @max_occupants
 
@@ -67,17 +73,11 @@ class Housing extends Structure
         found
 
     get_view_data: ->
-        vdata = {}
+        return super if @is_under_construction() || !@built
 
-        switch @state.current()
-            when 'under_construction'
-                vdata = super
-            when 'operating'
-                vdata = 
-                    structure: @
-                    occupants: @residents
-
-        vdata
+        vdata = 
+            structure: @
+            occupants: @residents
 
     template_id: ->
         '#housing-template'

@@ -5,15 +5,15 @@
         }
     %>
 
-    <div class="block" data-id="<%=id%>">
-        <div class="body">
-            Block <%=id%>
+    <div class="body">
+        <a href="#" data-action="launch_settings_menu">Block <%=id%></a>
 
+        <% if (!structure){ %>
             <p>
                 <a href="#" class="btn" data-action="launch_build_menu">Build Here</a>
             </p>
+        <% } %>
 
-            <div class="structure"></div>
-        </div>
+        <div class="structure"></div>
     </div>
 </script>

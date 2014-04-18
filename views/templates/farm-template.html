@@ -15,6 +15,9 @@
 
             <% if (crops_stored > 0){ %>
                 <p><%=crops_stored%> Crops in Storage</p>
+                <p>
+                    <a href="#" data-action="request_warehouse_pickup" class="btn">Request Pickup</a>
+                </p>
             <% } %>
 
         <% } else if (_.indexOf(['tilling_soil', 'planting', 'growing'], state.current()) > -1) { %>

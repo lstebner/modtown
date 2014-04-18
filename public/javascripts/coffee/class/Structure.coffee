@@ -39,6 +39,25 @@ class Structure extends RenderedObject
             operating_cost: 10 #not yet implemented further than setting
         )
 
+    setup_events: ->
+        @container.on 'click', (e) =>
+            e.preventDefault()
+            $el = $(e.target)
+
+            switch $el.data('action')
+                when 'launch_settings_menu' then @open_settings_menu()
+
+    setup_settings_menu: ->
+        @settings_menu = new StructureMenu null,
+            title: @name
+            items:
+                cancel: 'Close'
+
+    open_settings_menu: ->
+        return unless @settings_menu
+
+        @settings_menu.open()
+
     update: (clock) ->
         @state.update(clock)
 
@@ -91,12 +110,17 @@ class Structure extends RenderedObject
     has_jobs_available: ->
         !!(@max_employees > 0 && @employees.length < @max_employees && !@is_under_construction())
 
+    #meant to be overridden by subclasses
+    settings_menu_items: ->
+        close: 'Close'
+
     get_view_data: ->
         vdata = {}
 
         switch @state.current()
             when 'under_construction'
                 vdata =
+                    structure: null
                     construction_time: @construction_time
                     construction_time_remaining: @state_timer.remaining()
                     construction_percent_complete: @state_timer.percent_complete()
@@ -109,6 +133,7 @@ class Structure extends RenderedObject
             else
                 vdata = 
                     built: @built
+                    structure: @
 
         vdata.state = @state
         vdata
