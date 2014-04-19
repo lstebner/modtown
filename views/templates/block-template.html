@@ -14,6 +14,6 @@
             </p>
         <% } %>
 
-        <div class="structure"></div>
+        <div class="structure" <% if (structure){ %>data-id="<%=structure.id%>"<% } %>></div>
     </div>
 </script>

@@ -71,9 +71,3 @@ class Street extends RenderedObject
         new_structure
 
     setup_events: ->
-        # @container.on 'click', '.btn', (e) =>
-        #     e.preventDefault()
-        #     $el = $(e.target)
-
-        #     switch $el.data('action')
-        #         when 'add_block' then @create_block()
