@@ -266,11 +266,26 @@ class Town extends RenderedObject
                 when 'launch_hire_workers_menu'
                     structure_id = $el.data('structure-id')
                     if _.has @structure_ids_to_index, structure_id
-                        structure = @structures[@structure_ids_to_index[structure_id]]
-                        hire_workers_menu = new HireWorkersMenu null, 
-                            job: structure
-                            workers: @get_available_workers()
-                            open: true
+                        structure = @get_structure structure_id
+                        if structure
+                            hire_workers_menu = new HireWorkersMenu null, 
+                                job: structure
+                                workers: @get_available_workers()
+                                open: true
+
+                when 'request_warehouse_pickup'
+                    structure_id = $el.closest('.structure').data('id')
+                    structure = @get_structure structure_id
+                    console.log 'warehouse pickup call', structure_id
+                    if structure && _.has(@structures_by_type, 'warehouse')
+                        warehouse = @structures[_.first @structures_by_type['warehouse']]
+                        warehouse.queue_pickup structure
+
+
+    get_structure: (id) ->
+        return false if !_.has @structure_ids_to_index, id
+
+        @structures[@structure_ids_to_index[id]]
 
     get_housing: (only_vacant=false) ->
         return unless _.has @structures_by_type, 'housing'

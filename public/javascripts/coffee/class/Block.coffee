@@ -50,7 +50,7 @@ class Block extends RenderedObject
         @container.find('.build_actions').remove()
         @settings_link.text(@structure.name)
 
-        @container.find('.structure').show()
+        @container.find('.structure').data('id', @structure.id).show()
         @setup_settings_menu()
 
         @structure

@@ -5,6 +5,7 @@ class Warehouse extends Structure
         super
 
         @num_trucks = @opts.num_trucks
+        @num_trucks_available = 0
         @trucks = []
         @storage_capacity = 1000
         @total_stored = 0
@@ -27,7 +28,7 @@ class Warehouse extends Structure
     get_view_data: ->
         _.extend(
             super,
-            trucks_available: @num_trucks_available()
+            trucks_available: @num_trucks_available
         )
 
     template_id: ->
@@ -42,9 +43,12 @@ class Warehouse extends Structure
 
         @update_trucks(clock)
 
-        # are there any new pickup requests? 
+        # are there any new pickup requests?
+        if @pickup_queue.length
             # are there any trucks available with drivers?
+            if @num_trucks_available
                 # send the driver on the pickup
+                @send_truck_to_next_pickup()
 
         # do the same thing for deliveries
 
@@ -56,6 +60,8 @@ class Warehouse extends Structure
     update_trucks: (clock) ->
         for t in @trucks
             t.update(clock)
+
+        @get_num_trucks_available()
 
     setup_delivery_trucks: ->
         for i in [1..@num_trucks]
@@ -78,12 +84,28 @@ class Warehouse extends Structure
 
     send_truck_to_next_delivery: ->
 
+    assign_driver: (truck) ->
+        return truck if truck.has_driver()
+
+        for employee in @employees
+            if employee.state.current() == "idle"
+                truck.set_driver employee
+                break
+
+        truck
+
     queue_pickup: (where) ->
+        @pickup_queue.push where
 
     send_truck_to_pickup: (loc) ->
+        truck = @next_available_truck()
+        @assign_driver truck
+        truck.set_destination loc, false, true
 
     send_truck_to_next_pickup: ->
         return false unless @pickup_queue.length
+
+        @send_truck_to_pickup @pickup_queue.shift()
 
     store: (what, how_many) ->
         @storage[what] = 0 if !_.has @storage, what
@@ -103,12 +125,12 @@ class Warehouse extends Structure
     is_over_capacity: ->
         @total_stored > @storage_capacity
 
-    num_trucks_available: ->
+    get_num_trucks_available: ->
         return 0 if !@trucks.length
 
         count = 0
         for t in @trucks
             count += 1 if t.is_available()
 
-        Math.min @employees.length, count
+        @num_trucks_available = Math.min @employees.length, count
 

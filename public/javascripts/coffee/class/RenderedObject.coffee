@@ -2,14 +2,15 @@ _next_id = 0
 _auto_id = ->
     _next_id += 1
 
-class RenderedObject
+class RenderedObject extends StateObject
     constructor: (container, opts={}) ->
+        super
+
         @container = $ container
         @tmpl = @set_template @template_id()
         @rendered = false
         @view_data = {}
         @set_opts opts
-        @state = new StateManager('idle')
 
         @name = if @opts.name? then @opts.name else ''
         @id = if @opts.id? then @opts.id else _auto_id()
@@ -42,7 +43,10 @@ class RenderedObject
         @tmpl = new_tmpl
 
     get_view_data: ->
-        {}
+        {
+            id: @id
+            name: @name
+        }
 
     set_view_data: (key, val) ->
         @view_data[key] = val
