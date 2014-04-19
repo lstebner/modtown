@@ -38,7 +38,7 @@ class ModTownGame extends RenderedObject
         @town = new Town @container.find('#town'), town_opts
 
         _.defer =>
-            @town.create_street({ blocks: 4 });
+            @town.create_street({ blocks: 6 });
 
     setup_hud: ->
         @hud = new HUD @container.find('#hud'), { town: @town }
@@ -97,3 +97,4 @@ class ModTownGame extends RenderedObject
 
 $ ->
     World.game = new ModTownGame "#container"
+    World.gps = new GPS World.game.town

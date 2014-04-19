@@ -4,6 +4,9 @@ pin = (extra=null) ->
     console.log("Hit pin #{if this.id then this.id += 1 else this.id = 1}", extra)
 
 # Classes
+# @codekit-prepend "class/StateObject.coffee"
+# @codekit-prepend "class/Address.coffee"
+# @codekit-prepend "class/GPS.coffee"
 # @codekit-prepend "class/Calendar.coffee"
 # @codekit-prepend "class/Timer.coffee"
 # @codekit-prepend "class/WorldClock.coffee"
