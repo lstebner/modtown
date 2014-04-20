@@ -47,7 +47,7 @@ class StateManager
         return unless _.has @bindings, event_name
 
         for fn in @bindings[event_name]
-            fn.apply @, data?
+            fn.apply @, data
 
     record_history: (type='changed') ->
         switch type

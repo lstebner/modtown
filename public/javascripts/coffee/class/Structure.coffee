@@ -21,7 +21,7 @@ class Structure extends RenderedObject
         @min_employees_to_operate = @opts.min_employees_to_operate
         @operating_cost = @opts.operating_cost
         @lifetime_operating_cost = 0
-        @address = {}
+        @address = @opts.address
 
         @construction_tmpl = _.template $('#structure-under-construction-template').html()
         @needs_workers_tmpl = _.template $('#structure-needs-workers-template').html()
@@ -38,6 +38,7 @@ class Structure extends RenderedObject
             max_employees: 5
             min_employees_to_operate: 1
             operating_cost: 10 #not yet implemented further than setting
+            address: new Address()
         )
 
     setup_events: ->

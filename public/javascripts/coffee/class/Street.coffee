@@ -65,7 +65,7 @@ class Street extends RenderedObject
             return throw('Bad block id')
 
         block_idx = @block_ids_to_index[build_id]
-        new_structure = @blocks[block_idx].build_structure type
+        new_structure = @blocks[block_idx].build_structure type, new Address(@id, block_idx)
         @structures.push new_structure
         @structure_ids_to_index[new_structure.id] = @structures.length - 1
         new_structure

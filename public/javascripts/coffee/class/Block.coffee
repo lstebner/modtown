@@ -39,12 +39,12 @@ class Block extends RenderedObject
             @structure.render()
             @settings_link.text @structure.name
 
-    build_structure: (type) ->
+    build_structure: (type, address=null) ->
         switch type
-            when 'housing' then @build_housing()
-            when 'farm' then @build_farm()
-            when 'factory' then @build_factory()
-            when 'warehouse' then @build_warehouse()
+            when 'housing' then @build_housing address
+            when 'farm' then @build_farm address
+            when 'factory' then @build_factory address
+            when 'warehouse' then @build_warehouse address
 
         #ui updates
         @container.find('.build_actions').remove()
@@ -55,17 +55,17 @@ class Block extends RenderedObject
 
         @structure
 
-    build_housing: ->
-        @structure = new Housing @container.find('.structure')
+    build_housing: (address) ->
+        @structure = new Housing @container.find('.structure'), { address: address }
 
-    build_farm: ->
-        @structure = new Farm @container.find('.structure')
+    build_farm: (address) ->
+        @structure = new Farm @container.find('.structure'), { address: address }
 
-    build_factory: ->
-        @structure = new Factory @container.find('.structure')
+    build_factory: (address) ->
+        @structure = new Factory @container.find('.structure'), { address: address }
 
-    build_warehouse: ->
-        @structure = new Warehouse @container.find('.structure')
+    build_warehouse: (address) ->
+        @structure = new Warehouse @container.find('.structure'), { address: address }
 
     settings_menu_items: ->
         if @structure

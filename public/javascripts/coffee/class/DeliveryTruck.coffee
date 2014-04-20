@@ -23,7 +23,10 @@ class DeliveryTruck extends StateObject
         @total_stored = 0
 
         @set_destination @opts.destination
-        @current_location = null
+        @current_location = @warehouse_address
+
+        @state.on 'state_changed', (current, previous) =>
+            console.log 'truck change', current, previous
 
     update: (clock) ->
         super
@@ -99,11 +102,9 @@ class DeliveryTruck extends StateObject
     return_to_warehouse: ->
         return unless @warehouse_address.is_valid()
 
-        @set_destination @warehouse_address, true
+        @set_destination @warehouse_address, true, true
 
     driving: ->
-        @state_timer.update()
-
         if @state_timer.is_complete()
             if @is_at_destination()
                 @begin_loading()
@@ -111,14 +112,10 @@ class DeliveryTruck extends StateObject
                 @begin_unloading()
 
     loading: ->
-        @state_timer.update()
-
         if @state_timer.is_complete()
             @return_to_warehouse()
 
     unloading: ->
-        @state_timer.update()
-
         if @state_timer.is_complete()
             @park()
 
