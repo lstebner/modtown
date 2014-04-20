@@ -25,6 +25,9 @@ class Popup extends RenderedObject
 
         @render(true)
 
+        if @opts.position_for.length > 1
+            @best_position_for @opts.position_for[0], @opts.position_for[1]
+
         @open() if @opts.open
 
     default_opts: ->
@@ -35,6 +38,7 @@ class Popup extends RenderedObject
             open: false
             message: ''
             is_modal: false
+            position_for: []
         )
         
     template_id: ->
@@ -118,8 +122,8 @@ class Popup extends RenderedObject
     #set the position to the closest point deemed safe to 
     #the passed in x,y coordinates
     best_position_for: (x, y) ->
-        x_padding = 100
-        y_padding = -@container.height() / 3
+        x_padding = 40
+        y_padding = -@container.height() / 2
 
         right_edge = x + @container.width() + x_padding
         #check if there is not enough room to the right

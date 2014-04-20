@@ -4,6 +4,7 @@ class Town extends RenderedObject
     @extra_visitors: true
     @visitor_chance: if Town.extra_visitors then .15 else .05
     @visitors_all_day: true
+    @night_farming: true
 
     default_opts: ->
         _.extend(
@@ -272,11 +273,13 @@ class Town extends RenderedObject
                                 job: structure
                                 workers: @get_available_workers()
                                 open: true
+                                position_for: [e.clientX, e.clientY]
 
                 when 'request_warehouse_pickup'
                     structure_id = $el.closest('.structure').data('id')
                     structure = @get_structure structure_id
-                    console.log 'warehouse pickup call', structure_id
+                    
+                    console.log structure, _.has(@structures_by_type, 'warehouse')
                     if structure && _.has(@structures_by_type, 'warehouse')
                         warehouse = @structures[_.first @structures_by_type['warehouse']]
                         warehouse.queue_pickup structure
