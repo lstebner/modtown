@@ -33,8 +33,11 @@ class DeliveryTruck extends StateObject
 
         switch @state.current()
             when 'driving' then @driving()
-            when 'loading' then @unloading()
+            when 'loading' then @loading()
             when 'unloading' then @unloading()
+            when 'parked'
+                if @is_at_warehouse() && @has_driver() && @destination
+                    @set_destination @destination, false, true
 
     actual_capacity: ->
         return if @capacity >= DeliveryTruck.capacities.length || @capacity < 0
@@ -44,11 +47,11 @@ class DeliveryTruck extends StateObject
 
     begin_loading: ->
         @state.change_state('loading')
-        @state_timer.set_duration 100
+        @state_timer.set_duration 10, true
 
     begin_unloading: ->
         @state.change_state('unloading')
-        @state_timer.set_duration @total_stored * 10
+        @state_timer.set_duration @total_stored * 1, true
 
     is_full: ->
         @total_stored == @actual_capacity()
@@ -60,6 +63,13 @@ class DeliveryTruck extends StateObject
         return unless @is_parked()
 
         @driver = resident
+        resident.assign_role 'truck_driver'
+
+    release_driver: (resident) ->
+        return unless @driver
+
+        @driver.release_role() 
+        @driver = null
 
     has_driver: ->
         return @driver != null
@@ -69,8 +79,9 @@ class DeliveryTruck extends StateObject
 
         @passenger = resident
 
-    park: ->
+    park: (release_driver=true) ->
         @state.change_state('parked')
+        @release_driver() if release_driver
 
     is_parked: ->
         @state.current() == "parked"
@@ -88,15 +99,17 @@ class DeliveryTruck extends StateObject
         Address.compare @current_location, @warehouse_address
 
     set_destination: (destination=null, is_address=false, start_driving=false) ->
-        return unless @is_parked() && destination
+        return unless destination
 
         if is_address
             @destination_address = destination
         else
             @destination_address = destination.address
-            @destination = @destination
+            @destination = destination
 
-        @state_timer.set_duration World.gps.get_travel_time_between @current_location, @destination_address, @drive_speed
+        travel_time = World.gps.get_travel_time_between @current_location, @destination_address, @drive_speed
+        console.log travel_time
+        @state_timer.set_duration travel_time, true
         @state.change_state('driving') if start_driving && @has_driver()
 
     return_to_warehouse: ->
@@ -105,14 +118,28 @@ class DeliveryTruck extends StateObject
         @set_destination @warehouse_address, true, true
 
     driving: ->
+        console.log 'driving', @state_timer.ticks
         if @state_timer.is_complete()
-            if @is_at_destination()
-                @begin_loading()
-            else if @is_at_warehouse()
+            @current_location = @destination_address
+
+            if @is_at_warehouse()
+                console.log 'truck at warehouse'
                 @begin_unloading()
+            else if @is_at_destination()
+                console.log 'truck at destination'
+                @begin_loading()
 
     loading: ->
         if @state_timer.is_complete()
+            items = {}
+            total_amount = 0
+
+            if @destination
+                [items, total_amount] = @destination.retrieve_items 'all', @actual_capacity()
+                @storage = items
+                @total_stored = total_amount
+                console.log 'picked up', @total_stored, @storage
+
             @return_to_warehouse()
 
     unloading: ->

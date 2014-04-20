@@ -4,6 +4,7 @@
 # @codekit-append "Warehouse.coffee"
 
 class Structure extends RenderedObject
+    @storage_capacities: [0, 100, 500, 1000, 10000, 99999999]
     constructor: ->
         super
 
@@ -22,6 +23,10 @@ class Structure extends RenderedObject
         @operating_cost = @opts.operating_cost
         @lifetime_operating_cost = 0
         @address = @opts.address
+
+        @storage = {}
+        @num_stored_items = 0
+        @max_storage_capacity = Structure.storage_capacities[2]
 
         @construction_tmpl = _.template $('#structure-under-construction-template').html()
         @needs_workers_tmpl = _.template $('#structure-needs-workers-template').html()
@@ -158,3 +163,107 @@ class Structure extends RenderedObject
             @container.html @needs_workers_tmpl @get_view_data()
         else
             super true
+
+    get_num_stored_items_by_type: (type) ->
+        return -1 unless _.has @storage, type
+
+        @storage[type]
+
+    get_storage: ->
+        @storage
+
+    get_num_stored_items: ->
+        @num_stored_items
+
+    over_capacity: ->
+        @num_stored_items > @max_storage_capacity
+
+    can_fit_items_in_storage: (num_items=0) ->
+        @num_stored_items + num_items < @max_storage_capacity
+
+    how_many_can_fit: (amount) ->
+        fits = @max_storage_capacity - @num_stored_items
+        leftover = amount - fits
+
+        [fits, leftover]
+
+    # returns the amount of items that could *not* be stored
+    # all_or_nothing flag will not store any if they don't all fit. When false, it will
+    # store the max possible to fill up to max_storage_capacity and return the amount
+    # that it could not use
+    store_items: (type, amount=1, all_or_nothing=true) ->
+        @storage[type] = 0 if !_.has @storage, type
+        return_amount = 0
+
+        if @can_fit_items_in_storage amount
+            @storage[type] += amount
+        else if !all_or_nothing && @can_fit_items_in_storage(1)
+            [can_fit, remaining] = @how_many_can_fit(amount)
+            @storage[type] += can_fit
+            return_amount = remaining
+        else
+            throw('Not enough room to store items')
+            return_amount = amount
+
+        @storage_updated()
+
+        return return_amount
+
+
+    # this method will actually remove items from storage, if they're available
+    remove_items_from_storage: (type, amount=1) ->
+        num_items = @get_num_stored_items_by_type type
+
+        if num_items < 0
+            throw('Item not available in storage')
+            return false
+
+        else if num_items >= amount
+            @storage[type] -= amount
+            console.log 'subtracted storage', @storage[type], amount
+
+        else if amount > num_items
+            @storage[type] = 0
+            amount = num_items
+
+        @storage_updated()
+
+        return amount
+
+    # vanity method for remove_items_from_storage
+    retrieve_items: (type='all', amount=1) ->
+        total_retrieved = 0
+        retrieved_items = {}
+
+        if type == 'all'
+            types = @get_stored_item_types()
+            for type in types
+                if total_retrieved < amount
+                    retrieved_items[type] = @remove_items_from_storage type, amount
+                    total_retrieved += retrieved_items[type]
+                else
+                    break
+        else
+            retrieved_items[type] = @remove_items_from_storage type, amount
+            total_retrieved = retrieved_items[type]
+
+        [retrieved_items, total_retrieved]
+
+    storage_updated: ->
+        @num_stored_items = 0
+
+        for key, items of @storage
+            @num_stored_items += items
+
+        @container.trigger('storage_updated')
+
+    get_stored_item_types: ->
+        _.keys @storage
+
+
+
+
+
+
+
+

@@ -65,7 +65,8 @@ class Warehouse extends Structure
 
     setup_delivery_trucks: ->
         for i in [1..@num_trucks]
-            new_truck = new DeliveryTruck()
+            new_truck = new DeliveryTruck
+                warehouse_address: @address
             new_truck.park()
 
             @trucks.push(new_truck)
@@ -88,7 +89,7 @@ class Warehouse extends Structure
         return truck if truck.has_driver()
 
         for employee in @employees
-            if employee.state.current() == "idle"
+            if !employee.role
                 truck.set_driver employee
                 break
 
@@ -96,6 +97,7 @@ class Warehouse extends Structure
 
     queue_pickup: (where) ->
         @pickup_queue.push where
+        console.log 'new pickup in', where
 
     send_truck_to_pickup: (loc) ->
         truck = @next_available_truck()

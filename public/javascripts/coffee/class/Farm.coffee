@@ -28,13 +28,11 @@ class Farm extends Structure
         @harvest_time = 0
         @soil_ready = false
         @acres = 1 #1 acre in sq ft = 43560
-        @crop_capacity = 0
+        @crop_plots = 0
         @plots_per_acre = 0
         @current_growth_percent = 0
         @planted_crops = []
         @harvested_crops = []
-        @crop_storage = {}
-        @total_crops_stored = 0
         @last_harvest_amount = 0
         @state_timer = new Timer()
 
@@ -68,7 +66,7 @@ class Farm extends Structure
             harvested_crops: @harvested_crops
             planted_crops: @planted_crops
             crops_harvested: @last_harvest_amount
-            crops_stored: @total_crops_stored
+            crops_stored: @num_stored_items
         )
 
     template_id: ->
@@ -93,6 +91,7 @@ class Farm extends Structure
                     select_crop_menu = new SelectCropMenu null, 
                         open: true
                         items: some_crop_menu_items
+                        position_for: [e.clientX, e.clientY]
                     select_crop_menu.container.on 'item_selected', (e, value) =>
                         if _.has @available_crops, value
                             @set_crop @available_crops[value]
@@ -124,8 +123,8 @@ class Farm extends Structure
         # 43560 is the amount of real sq ft per acre. Not sure if that'll work
         # for our game though honestly
         @plots_per_acre = 10 / @crop.spacing
-        @crop_capacity = Math.floor(@plots_per_acre * @acres)
-        @harvest_time = @crop_capacity
+        @crop_plots = Math.floor(@plots_per_acre * @acres)
+        @harvest_time = @crop_plots
 
         @plots_per_acre
 
@@ -160,10 +159,10 @@ class Farm extends Structure
     start_planting: ->
         @soil_ready = true
         @state.change_state('planting')
-        @state_timer.set_duration @crop_capacity, true
+        @state_timer.set_duration @crop_plots, true
 
     planting: (clock) ->
-        return unless clock.is_afternoon()
+        return unless clock.is_afternoon() || Town.night_farming
 
         # Planting
         # Each plant requires a certain amount of time to be planted
@@ -182,7 +181,7 @@ class Farm extends Structure
             if @planted_crops[last].fully_planted()
                 @state_timer.update()
         #otherwise, start a new plant
-        else if @planted_crops.length < @crop_capacity
+        else if @planted_crops.length < @crop_plots
             new_plant = new Crop null, @available_crops[@crop.type]
             new_plant.start_planting()
             @planted_crops.push new_plant
@@ -194,7 +193,7 @@ class Farm extends Structure
     finish_planting: (trigger_event='complete') ->
         @container.trigger("planting_#{trigger_event}") if trigger_event?
         @state.change_state('growing')
-        @state_timer.set_duration @crop_capacity, true
+        @state_timer.set_duration @crop_plots, true
 
     growing: (clock) ->
         total_growth_percent = 0
@@ -242,13 +241,15 @@ class Farm extends Structure
 
     finish_harvest: ->
         @last_harvest_amount = 0
-        while crop = @harvested_crops.shift()
-            if !_.has @crop_storage, crop.type
-                @crop_storage[crop.type] = 0
+        crop_type = @harvested_crops[0]?.type
 
-            @crop_storage[crop.type] += crop.harvested_amount()
-            @total_crops_stored += crop.harvested_amount()
+        while crop = @harvested_crops.shift()
             @last_harvest_amount += crop.harvested_amount()
+
+        couldnt_fit = @store_items crop_type, @last_harvest_amount, false
+
+        if couldnt_fit > 0
+            throw("Wasnt enough room to store #{couldnt_fit} Crops")
 
         @state.change_state('idle')
 
@@ -258,14 +259,6 @@ class Farm extends Structure
 
     replant: ->
         @state.change_state('.planting')
-
-    get_stored_crops: ->
-        @crop_storage
-
-    get_stored_crop_amount: (crop) ->
-        return 0 unless _.has @crop_storage, crop
-
-        @crop_storage[crop]
 
 
 

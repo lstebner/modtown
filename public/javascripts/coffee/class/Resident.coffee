@@ -19,6 +19,7 @@ class Resident extends RenderedObject
         @house_id = @house?.id
 
         @employer = @opts.employer
+        @role = null
 
         @setup_stats()
 
@@ -84,6 +85,22 @@ class Resident extends RenderedObject
 
     set_employer: (employer) ->
         @employer = employer
+
+    assign_role: (role, force=false) ->
+        #todo: consider disallowing role change when state == "sleeping"
+
+        if @role != null && !force
+            throw('Resident already has role')
+            return @
+        else
+            @container.trigger('role_changed')
+
+            @role = role
+            @
+
+    release_role: ->
+        @role = null
+
 
 
 World.Resident = Resident
