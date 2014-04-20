@@ -16,4 +16,4 @@ class Address
         @block = block
 
     is_valid: ->
-        street && block
+        !!(@street && @block)
