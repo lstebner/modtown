@@ -9,8 +9,9 @@ class RenderedObject extends StateObject
         @container = $ container
         @tmpl = @set_template @template_id()
         @rendered = false
-        @view_data = {}
         @set_opts opts
+
+        @view_data = @opts.view_data
 
         @name = if @opts.name? then @opts.name else ''
         @id = if @opts.id? then @opts.id else _auto_id()
@@ -26,6 +27,7 @@ class RenderedObject extends StateObject
         {
             name: ''
             render: false
+            view_data: {}
         }
 
     set_opts: (opts={}) ->
@@ -43,11 +45,12 @@ class RenderedObject extends StateObject
         @tmpl = new_tmpl
 
     get_view_data: ->
-        {
+        _.extend(
             id: @id
             name: @name
-        }
-
+            @view_data
+        )
+        
     set_view_data: (key, val) ->
         @view_data[key] = val
 
