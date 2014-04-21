@@ -5,6 +5,7 @@ class Crop extends RenderedObject
         @can_grow_at_night = @opts.can_grow_at_night
         @drops_seeds = @opts.drops_seeds
         @harvest_amount = @opts.harvest_amount
+        @units = @opts.units
         @growth_rate = @opts.growth_rate
         @planting_rate = @opts.planting_rate
         @harvest_rate = @opts.harvest_rate
@@ -31,14 +32,14 @@ class Crop extends RenderedObject
             needs_water: true
             type: ''
             value: 1
+            units: ''
         )
 
     space_needed: ->
         @spacing
 
     update: (clock) ->
-        @state.update(clock)
-        @state_timer.update() if !@state_timer.is_complete()
+        super
 
         switch @state.current()
             when 'idle' then @idle()
@@ -63,11 +64,9 @@ class Crop extends RenderedObject
 
     start_planting: ->
         @state.change_state('planting')
-        @state_timer.set_duration @plant_rate_to_ticks(), true
+        @state_timer.set_duration @plant_rate_to_ticks(), true, "auto"
 
     planting: (clock) ->
-        @state_timer.update()
-
         if @state_timer.is_complete()
             @planting_finished()
 
@@ -75,18 +74,16 @@ class Crop extends RenderedObject
         @is_planted = true
         @container.trigger('planting_finished')
         @state.change_state('growing')
-        @state_timer.set_duration @growth_rate_to_ticks(), true
+        @state_timer.set_duration @growth_rate_to_ticks(), true, "auto"
 
     calculate_harvest_amount: ->
         Math.floor(Math.random() * @harvest_amount[1]) + @harvest_amount[0]
 
     start_harvest: ->
         @state.change_state('harvesting')
-        @state_timer.set_duration @harvest_rate_to_ticks(), true
+        @state_timer.set_duration @harvest_rate_to_ticks(), true, "auto"
 
     harvesting: ->
-        @state_timer.update()
-
         if @state_timer.is_complete()
             @actual_harvest_amount = @calculate_harvest_amount()
             @state.change_state('harvested')
@@ -100,11 +97,11 @@ class Crop extends RenderedObject
         if Math.random() < (@growth_rate * 10)
             @current_growth += @growth_rate
 
-            if @current_growth > 100
+            if @current_growth > 10#0
                 @finish_growing()
 
     current_growth_percent: ->
-        Math.min 1, @current_growth / 100
+        Math.min 1, @current_growth / 10#0
 
     finish_growing: ->
         @state.change_state('fully_grown')

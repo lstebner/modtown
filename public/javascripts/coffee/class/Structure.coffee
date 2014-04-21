@@ -64,7 +64,7 @@ class Structure extends RenderedObject
         @settings_menu.open()
 
     update: (clock) ->
-        @state.update(clock)
+        super
 
         switch @state.current()
             when 'begin_construction' then @begin_construction(clock)
@@ -77,7 +77,6 @@ class Structure extends RenderedObject
                 @operating(clock)
 
     progress_construction: (clock) ->
-        @state_timer.update()
         @construction_time_remaining = @state_timer.remaining
         @finish_construction() if @state_timer.is_complete()
 
@@ -87,7 +86,7 @@ class Structure extends RenderedObject
     begin_construction: (clock) ->
         @change_state 'under_construction'
 
-        @state_timer.set_duration @construction_time, true, "manual"
+        @state_timer.set_duration @construction_time, true, "auto"
         @construction_started = World.game.clock.now()
         @built = false
 

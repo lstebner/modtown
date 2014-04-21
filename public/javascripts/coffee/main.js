@@ -3187,7 +3187,7 @@
     };
 
     Structure.prototype.update = function(clock) {
-      this.state.update(clock);
+      Structure.__super__.update.apply(this, arguments);
       switch (this.state.current()) {
         case 'begin_construction':
           return this.begin_construction(clock);
@@ -3204,7 +3204,6 @@
     };
 
     Structure.prototype.progress_construction = function(clock) {
-      this.state_timer.update();
       this.construction_time_remaining = this.state_timer.remaining;
       if (this.state_timer.is_complete()) {
         return this.finish_construction();
@@ -3217,7 +3216,7 @@
 
     Structure.prototype.begin_construction = function(clock) {
       this.change_state('under_construction');
-      this.state_timer.set_duration(this.construction_time, true, "manual");
+      this.state_timer.set_duration(this.construction_time, true, "auto");
       this.construction_started = World.game.clock.now();
       return this.built = false;
     };
@@ -3393,10 +3392,7 @@
     };
 
     Crop.prototype.update = function(clock) {
-      this.state.update(clock);
-      if (!this.state_timer.is_complete()) {
-        this.state_timer.update();
-      }
+      Crop.__super__.update.apply(this, arguments);
       switch (this.state.current()) {
         case 'idle':
           return this.idle();
@@ -3431,11 +3427,10 @@
 
     Crop.prototype.start_planting = function() {
       this.state.change_state('planting');
-      return this.state_timer.set_duration(this.plant_rate_to_ticks(), true);
+      return this.state_timer.set_duration(this.plant_rate_to_ticks(), true, "auto");
     };
 
     Crop.prototype.planting = function(clock) {
-      this.state_timer.update();
       if (this.state_timer.is_complete()) {
         return this.planting_finished();
       }
@@ -3445,7 +3440,7 @@
       this.is_planted = true;
       this.container.trigger('planting_finished');
       this.state.change_state('growing');
-      return this.state_timer.set_duration(this.growth_rate_to_ticks(), true);
+      return this.state_timer.set_duration(this.growth_rate_to_ticks(), true, "auto");
     };
 
     Crop.prototype.calculate_harvest_amount = function() {
@@ -3454,11 +3449,10 @@
 
     Crop.prototype.start_harvest = function() {
       this.state.change_state('harvesting');
-      return this.state_timer.set_duration(this.harvest_rate_to_ticks(), true);
+      return this.state_timer.set_duration(this.harvest_rate_to_ticks(), true, "auto");
     };
 
     Crop.prototype.harvesting = function() {
-      this.state_timer.update();
       if (this.state_timer.is_complete()) {
         this.actual_harvest_amount = this.calculate_harvest_amount();
         return this.state.change_state('harvested');
@@ -3695,11 +3689,10 @@
 
     Farm.prototype.start_tilling = function() {
       this.state.change_state('tilling_soil');
-      return this.state_timer.set_duration(this.till_soil_time * (1 - this.employees.length * .05), true, "manual");
+      return this.state_timer.set_duration(this.till_soil_time * (1 - this.employees.length * .05), true, "auto");
     };
 
     Farm.prototype.till_soil = function(clock) {
-      this.state_timer.update();
       if (this.state_timer.is_complete()) {
         return this.start_planting();
       }

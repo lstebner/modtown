@@ -148,11 +148,9 @@ class Farm extends Structure
 
     start_tilling: ->
         @state.change_state('tilling_soil')
-        @state_timer.set_duration (@till_soil_time * (1 - @employees.length * .05)), true, "manual"
+        @state_timer.set_duration (@till_soil_time * (1 - @employees.length * .05)), true, "auto"
 
     till_soil: (clock) ->
-        @state_timer.update()
-
         if @state_timer.is_complete()
             @start_planting()
 
