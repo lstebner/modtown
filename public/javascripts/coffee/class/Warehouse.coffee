@@ -12,7 +12,6 @@ class Warehouse extends Structure
 
         @pickup_queue = []
         @delivery_queue = []
-        @storage = {}
 
         @setup_delivery_trucks()
 
@@ -61,6 +60,10 @@ class Warehouse extends Structure
         for t in @trucks
             t.update(clock)
 
+            if t.state.current() == "unloading_complete"
+                @storage.take_all_items_from t.storage
+                t.park()
+
         @get_num_trucks_available()
 
     setup_delivery_trucks: ->
@@ -97,7 +100,6 @@ class Warehouse extends Structure
 
     queue_pickup: (where) ->
         @pickup_queue.push where
-        console.log 'new pickup in', where
 
     send_truck_to_pickup: (loc) ->
         truck = @next_available_truck()
@@ -108,24 +110,6 @@ class Warehouse extends Structure
         return false unless @pickup_queue.length
 
         @send_truck_to_pickup @pickup_queue.shift()
-
-    store: (what, how_many) ->
-        @storage[what] = 0 if !_.has @storage, what
-
-        @storage[what] += how_many
-
-        @check_storage_capacity()
-
-    check_storage_capacity: ->
-        @total_stored = 0
-
-        for amount in @storage
-            @total_stored += amount
-
-        @state.change_state('over capacity') if @is_over_capacity()
-
-    is_over_capacity: ->
-        @total_stored > @storage_capacity
 
     get_num_trucks_available: ->
         return 0 if !@trucks.length

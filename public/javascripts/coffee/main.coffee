@@ -11,6 +11,7 @@ pin = (extra=null) ->
 # @codekit-prepend "class/Timer.coffee"
 # @codekit-prepend "class/WorldClock.coffee"
 # @codekit-prepend "class/WeatherSystem.coffee"
+# @codekit-prepend "class/Storage.coffee"
 # @codekit-prepend "class/RenderedObject.coffee"
 # @codekit-prepend "class/Overlay.coffee"
 # @codekit-prepend "class/Popup.coffee"

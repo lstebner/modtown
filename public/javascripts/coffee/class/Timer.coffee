@@ -1,3 +1,10 @@
+###
+# Timer
+# 
+# Even though Timer is technically built to run like a StateObject, it is a prerequisite for
+# StateObject so it cannot extend it. 
+####
+
 class Timer
     constructor: (@duration=0, @on_complete=null, @on_tick=null)->
         @ticks = 0

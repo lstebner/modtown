@@ -19,8 +19,7 @@ class DeliveryTruck extends StateObject
         @drive_speed = @opts.drive_speed
         @capacity = @opts.capacity
         @warehouse_address = @opts.warehouse_address
-        @storage = {}
-        @total_stored = 0
+        @storage = new Storage @actual_capacity()
 
         @set_destination @opts.destination
         @current_location = @warehouse_address
@@ -51,13 +50,7 @@ class DeliveryTruck extends StateObject
 
     begin_unloading: ->
         @state.change_state('unloading')
-        @state_timer.set_duration @total_stored * 1, true
-
-    is_full: ->
-        @total_stored == @actual_capacity()
-
-    is_empty: ->
-        @total_stored == 0
+        @state_timer.set_duration @storage.get_num_items() * 1, true
 
     set_driver: (resident) ->
         return unless @is_parked()
@@ -108,7 +101,6 @@ class DeliveryTruck extends StateObject
             @destination = destination
 
         travel_time = World.gps.get_travel_time_between @current_location, @destination_address, @drive_speed
-        console.log travel_time
         @state_timer.set_duration travel_time, true
         @state.change_state('driving') if start_driving && @has_driver()
 
@@ -118,15 +110,12 @@ class DeliveryTruck extends StateObject
         @set_destination @warehouse_address, true, true
 
     driving: ->
-        console.log 'driving', @state_timer.ticks
         if @state_timer.is_complete()
             @current_location = @destination_address
 
             if @is_at_warehouse()
-                console.log 'truck at warehouse'
                 @begin_unloading()
             else if @is_at_destination()
-                console.log 'truck at destination'
                 @begin_loading()
 
     loading: ->
@@ -135,16 +124,13 @@ class DeliveryTruck extends StateObject
             total_amount = 0
 
             if @destination
-                [items, total_amount] = @destination.retrieve_items 'all', @actual_capacity()
-                @storage = items
-                @total_stored = total_amount
-                console.log 'picked up', @total_stored, @storage
+                @storage.take_all_items_from @destination.storage, 'all'
 
             @return_to_warehouse()
 
     unloading: ->
         if @state_timer.is_complete()
-            @park()
+            @state.change_state('unloading_complete')
 
 
 

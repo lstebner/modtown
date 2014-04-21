@@ -66,7 +66,7 @@ class Farm extends Structure
             harvested_crops: @harvested_crops
             planted_crops: @planted_crops
             crops_harvested: @last_harvest_amount
-            crops_stored: @num_stored_items
+            crops_stored: @storage.get_num_items()
         )
 
     template_id: ->
@@ -235,13 +235,17 @@ class Farm extends Structure
             next_plant = @planted_crops.shift()
             next_plant.start_harvest()
             @harvested_crops.push next_plant
+        else if !@planted_crops.length && last && @harvested_crops[last].fully_harvested()
+            console.log('Plant harvest count mismatch, finishing')
+            while !@state_timer.is_complete()
+                @state_timer.update(clock)
 
         if @state_timer.is_complete()
             @finish_harvest()
 
     finish_harvest: ->
         @last_harvest_amount = 0
-        crop_type = @harvested_crops[0]?.type
+        crop_type = @harvested_crops[0].type
 
         while crop = @harvested_crops.shift()
             @last_harvest_amount += crop.harvested_amount()
