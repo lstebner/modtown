@@ -162,6 +162,9 @@
   background-color: #fafafa;
   border-radius: 5px;
 }
+.popup.wide {
+  width: 580px;
+}
 .popup .titlebar {
   font-size: 18px;
   border-bottom: 1px solid #888;

@@ -1138,11 +1138,17 @@
       this.message = this.opts.message;
       this.is_modal = this.opts.is_modal;
       this.set_body_template(this.opts.body_template);
+      this.classes = this.opts.classes;
+      if (this.opts.wide) {
+        this.classes.push('wide');
+      }
       this.default_position = this.container.position();
       this.setup_events();
       this.render(true);
       if (this.opts.position_for.length > 1) {
         this.best_position_for(this.opts.position_for[0], this.opts.position_for[1]);
+      } else {
+        this.set_position_in_window(this.opts.position_in_window);
       }
       if (this.opts.open) {
         this.open();
@@ -1156,7 +1162,10 @@
         open: false,
         message: '',
         is_modal: false,
-        position_for: []
+        position_for: [],
+        position_in_window: 'center',
+        classes: [],
+        wide: false
       });
     };
 
@@ -1257,6 +1266,60 @@
       });
     };
 
+    Popup.prototype.set_position_in_window = function(pos) {
+      var $w, bottom_y, center_x, center_y, coords, left_x, right_x, top_y;
+      if (pos == null) {
+        pos = 'center';
+      }
+      $w = $(window);
+      this.position_in_window = pos;
+      coords = [0, 0];
+      center_x = $w.width() / 2 - this.container.outerWidth() / 2;
+      center_y = $w.height() / 2 - this.container.outerHeight() / 2;
+      left_x = 0;
+      right_x = $w.width() - this.container.outerWidth();
+      top_y = 0;
+      bottom_y = $w.height() - this.container.outerHeight();
+      switch (this.position_in_window) {
+        case 'center':
+          coords[0] = center_x;
+          coords[1] = center_y;
+          break;
+        case 'n':
+          coords[0] = center_x;
+          coords[1] = top_y;
+          break;
+        case 'ne':
+          coords[0] = right_x;
+          coords[1] = top_y;
+          break;
+        case 'nw':
+          coords[0] = left_x;
+          coords[1] = top_y;
+          break;
+        case 'e':
+          coords[0] = left_x;
+          coords[1] = center_y;
+          break;
+        case 'w':
+          coords[0] = right_x;
+          coords[1] = center_y;
+          break;
+        case 's':
+          coords[0] = center_x;
+          coords[1] = bottom_y;
+          break;
+        case 'se':
+          coords[0] = left_x;
+          coords[1] = bottom_y;
+          break;
+        case 'sw':
+          coords[0] = right_x;
+          coords[1] = bottom_y;
+      }
+      return this.set_position(coords[0], coords[1]);
+    };
+
     Popup.prototype.best_position_for = function(x, y) {
       var right_edge, x_padding, y_padding;
       x_padding = 40;
@@ -1294,6 +1357,9 @@
 
     Popup.prototype.render = function() {
       Popup.__super__.render.apply(this, arguments);
+      if (!_.isEmpty(this.classes)) {
+        this.container.addClass(this.classes.join(''));
+      }
       if (this.body_template) {
         return this.render_body();
       }

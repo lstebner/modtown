@@ -18,6 +18,8 @@ class Popup extends RenderedObject
         @message = @opts.message
         @is_modal = @opts.is_modal
         @set_body_template @opts.body_template
+        @classes = @opts.classes
+        @classes.push('wide') if @opts.wide
 
         @default_position = @container.position()
 
@@ -27,6 +29,8 @@ class Popup extends RenderedObject
 
         if @opts.position_for.length > 1
             @best_position_for @opts.position_for[0], @opts.position_for[1]
+        else
+            @set_position_in_window @opts.position_in_window
 
         @open() if @opts.open
 
@@ -39,6 +43,9 @@ class Popup extends RenderedObject
             message: ''
             is_modal: false
             position_for: []
+            position_in_window: 'center'
+            classes: []
+            wide: false
         )
         
     template_id: ->
@@ -119,6 +126,56 @@ class Popup extends RenderedObject
             top: y
             left: x
 
+    set_position_in_window: (pos='center') ->
+        $w = $(window)
+        @position_in_window = pos
+        coords = [0, 0]
+        center_x = $w.width() / 2 - @container.outerWidth() / 2
+        center_y = $w.height() / 2 - @container.outerHeight() / 2
+        left_x = 0
+        right_x = $w.width() - @container.outerWidth()
+        top_y = 0
+        bottom_y = $w.height() - @container.outerHeight()
+
+        switch @position_in_window
+            when 'center'
+                coords[0] = center_x
+                coords[1] = center_y
+
+            when 'n'
+                coords[0] = center_x
+                coords[1] = top_y
+
+            when 'ne'
+                coords[0] = right_x
+                coords[1] = top_y
+
+            when 'nw'
+                coords[0] = left_x
+                coords[1] = top_y
+
+            when 'e'
+                coords[0] = left_x
+                coords[1] = center_y
+
+            when 'w'
+                coords[0] = right_x
+                coords[1] = center_y
+
+            when 's'
+                coords[0] = center_x
+                coords[1] = bottom_y
+
+            when 'se'
+                coords[0] = left_x
+                coords[1] = bottom_y
+
+            when 'sw'
+                coords[0] = right_x
+                coords[1] = bottom_y
+
+        @set_position coords[0], coords[1]
+
     #set the position to the closest point deemed safe to 
     #the passed in x,y coordinates
     best_position_for: (x, y) ->
@@ -157,6 +214,8 @@ class Popup extends RenderedObject
 
     render: ->
         super
+
+        @container.addClass @classes.join('') if !_.isEmpty @classes
 
         @render_body() if @body_template
 
