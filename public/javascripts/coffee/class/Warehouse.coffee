@@ -37,6 +37,17 @@ class Warehouse extends Structure
         view_info: 'Stats'
         close: 'Close'
 
+    settings_item_selected: (value) ->
+        switch value
+            when 'view_info'
+                World.Popup.Create
+                    title: "#{@name} Stats"
+                    wide: true
+                    body_template: "#warehouse-stats-template"
+                    view_data: { warehouse: @ }
+
+                @close_settings_menu()
+
     operating: (clock) ->
         return if @is_under_construction()
 

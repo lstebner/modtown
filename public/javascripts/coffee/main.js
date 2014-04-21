@@ -976,8 +976,8 @@
       this.container = $(container);
       this.tmpl = this.set_template(this.template_id());
       this.rendered = false;
-      this.view_data = {};
       this.set_opts(opts);
+      this.view_data = this.opts.view_data;
       this.name = this.opts.name != null ? this.opts.name : '';
       this.id = this.opts.id != null ? this.opts.id : _auto_id();
       this.setup_events();
@@ -993,7 +993,8 @@
     RenderedObject.prototype.default_opts = function() {
       return {
         name: '',
-        render: false
+        render: false,
+        view_data: {}
       };
     };
 
@@ -1021,10 +1022,10 @@
     };
 
     RenderedObject.prototype.get_view_data = function() {
-      return {
+      return _.extend({
         id: this.id,
         name: this.name
-      };
+      }, this.view_data);
     };
 
     RenderedObject.prototype.set_view_data = function(key, val) {
@@ -3246,10 +3247,15 @@
     };
 
     Structure.prototype.open_settings_menu = function() {
+      var _ref3,
+        _this = this;
       if (!this.settings_menu) {
         return;
       }
-      return this.settings_menu.open();
+      this.settings_menu.open();
+      return (_ref3 = this.settings_menu.container) != null ? _ref3.one("item_selected", function(e, value) {
+        return _this.settings_item_selected(value);
+      }) : void 0;
     };
 
     Structure.prototype.update = function(clock) {
@@ -4267,6 +4273,21 @@
         view_info: 'Stats',
         close: 'Close'
       };
+    };
+
+    Warehouse.prototype.settings_item_selected = function(value) {
+      switch (value) {
+        case 'view_info':
+          World.Popup.Create({
+            title: "" + this.name + " Stats",
+            wide: true,
+            body_template: "#warehouse-stats-template",
+            view_data: {
+              warehouse: this
+            }
+          });
+          return this.close_settings_menu();
+      }
     };
 
     Warehouse.prototype.operating = function(clock) {

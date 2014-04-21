@@ -1,0 +1,24 @@
+<script type="text/template" id="warehouse-stats-template">
+    <div class="stats-menu">
+        <h3><%=warehouse.name%></h3>
+        <strong>Employees</strong>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>State</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% _.each(warehouse.employees, function(employee){ %>
+                    <tr>
+                        <td><%=employee.id%></td>
+                        <td><%=employee.name%></td>
+                        <td><%=employee.state.current()%></td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+</script>

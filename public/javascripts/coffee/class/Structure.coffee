@@ -63,6 +63,9 @@ class Structure extends RenderedObject
 
         @settings_menu.open()
 
+        @settings_menu.container?.one "item_selected", (e, value) =>
+            @settings_item_selected value
+
     update: (clock) ->
         super
 
