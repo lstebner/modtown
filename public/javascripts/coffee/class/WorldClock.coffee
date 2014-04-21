@@ -1,5 +1,5 @@
 class WorldClock
-    @max_seconds: 60
+    @max_seconds: 1#60
     @max_minutes: 60
     @minutes_in_hour: WorldClock.max_minutes
     @max_hours: 10
