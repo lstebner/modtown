@@ -87,7 +87,7 @@ class Structure extends RenderedObject
     begin_construction: (clock) ->
         @change_state 'under_construction'
 
-        @state_timer.set_duration @construction_time, true
+        @state_timer.set_duration @construction_time, true, "manual"
         @construction_started = World.game.clock.now()
         @built = false
 

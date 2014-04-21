@@ -148,7 +148,7 @@ class Farm extends Structure
 
     start_tilling: ->
         @state.change_state('tilling_soil')
-        @state_timer.set_duration (@till_soil_time * (1 - @employees.length * .05)), true
+        @state_timer.set_duration (@till_soil_time * (1 - @employees.length * .05)), true, "manual"
 
     till_soil: (clock) ->
         @state_timer.update()
@@ -159,7 +159,7 @@ class Farm extends Structure
     start_planting: ->
         @soil_ready = true
         @state.change_state('planting')
-        @state_timer.set_duration @crop_plots, true
+        @state_timer.set_duration @crop_plots, true, "manual"
 
     planting: (clock) ->
         return unless clock.is_afternoon() || Town.night_farming
@@ -193,7 +193,7 @@ class Farm extends Structure
     finish_planting: (trigger_event='complete') ->
         @container.trigger("planting_#{trigger_event}") if trigger_event?
         @state.change_state('growing')
-        @state_timer.set_duration @crop_plots, true
+        @state_timer.set_duration @crop_plots, true, "manual"
 
     growing: (clock) ->
         total_growth_percent = 0
@@ -212,7 +212,7 @@ class Farm extends Structure
 
     begin_harvest: ->
         @state.change_state('harvest')
-        @state_timer.set_duration @harvest_time, true
+        @state_timer.set_duration @harvest_time, true, "manual"
         @last_harvest_amount = 0
 
     harvest: (clock) ->

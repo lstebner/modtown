@@ -6,11 +6,12 @@
 ####
 
 class Timer
-    constructor: (@duration=0, @on_complete=null, @on_tick=null)->
+    constructor: (@duration=0, @on_complete=null, @on_tick=null, @mode='manual')->
         @ticks = 0
         @timeout = null
         @state = new StateManager('init')
         @allow_auto_start = true
+        @mode = @mode
 
     on: (what, fn) ->
         switch what
@@ -41,7 +42,7 @@ class Timer
 
         @on_tick?(@ticks)
 
-        @finish() if @duration > 0 && @ticks >= @duration
+        @finish() if @duration > 0 && @ticks > @duration
 
     update: ->
         @state.update()
@@ -66,7 +67,7 @@ class Timer
 
     is_complete: ->
         # @state.current() == "complete"
-        @ticks >= @duration
+        @ticks > @duration
 
     is_running: ->
         @state.current() == "running"
@@ -79,10 +80,14 @@ class Timer
         @ticks = 1
         @state.change_state('reset')
 
-    set_duration: (new_dur, reset=false) ->
+    set_duration: (new_dur, reset=false, mode=@mode) ->
         @duration = new_dur if new_dur > -1
+        @set_mode mode if mode != @mode
 
         @reset() if reset
+
+    set_mode: (mode) ->
+        @mode = mode
 
 
 World.Timer = Timer

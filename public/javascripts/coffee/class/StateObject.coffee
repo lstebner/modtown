@@ -5,4 +5,4 @@ class StateObject
 
     update: ->
         @state.update()
-        @state_timer.update()
+        @state_timer.update() if @state_timer.mode == "auto"

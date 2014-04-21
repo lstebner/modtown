@@ -12,7 +12,9 @@
 
     StateObject.prototype.update = function() {
       this.state.update();
-      return this.state_timer.update();
+      if (this.state_timer.mode === "auto") {
+        return this.state_timer.update();
+      }
     };
 
     return StateObject;
@@ -141,14 +143,16 @@
 
 
   Timer = (function() {
-    function Timer(duration, on_complete, on_tick) {
+    function Timer(duration, on_complete, on_tick, mode) {
       this.duration = duration != null ? duration : 0;
       this.on_complete = on_complete != null ? on_complete : null;
       this.on_tick = on_tick != null ? on_tick : null;
+      this.mode = mode != null ? mode : 'manual';
       this.ticks = 0;
       this.timeout = null;
       this.state = new StateManager('init');
       this.allow_auto_start = true;
+      this.mode = this.mode;
     }
 
     Timer.prototype.on = function(what, fn) {
@@ -196,7 +200,7 @@
       if (typeof this.on_tick === "function") {
         this.on_tick(this.ticks);
       }
-      if (this.duration > 0 && this.ticks >= this.duration) {
+      if (this.duration > 0 && this.ticks > this.duration) {
         return this.finish();
       }
     };
@@ -234,7 +238,7 @@
     };
 
     Timer.prototype.is_complete = function() {
-      return this.ticks >= this.duration;
+      return this.ticks > this.duration;
     };
 
     Timer.prototype.is_running = function() {
@@ -253,16 +257,26 @@
       return this.state.change_state('reset');
     };
 
-    Timer.prototype.set_duration = function(new_dur, reset) {
+    Timer.prototype.set_duration = function(new_dur, reset, mode) {
       if (reset == null) {
         reset = false;
+      }
+      if (mode == null) {
+        mode = this.mode;
       }
       if (new_dur > -1) {
         this.duration = new_dur;
       }
+      if (mode !== this.mode) {
+        this.set_mode(mode);
+      }
       if (reset) {
         return this.reset();
       }
+    };
+
+    Timer.prototype.set_mode = function(mode) {
+      return this.mode = mode;
     };
 
     return Timer;
@@ -3203,7 +3217,7 @@
 
     Structure.prototype.begin_construction = function(clock) {
       this.change_state('under_construction');
-      this.state_timer.set_duration(this.construction_time, true);
+      this.state_timer.set_duration(this.construction_time, true, "manual");
       this.construction_started = World.game.clock.now();
       return this.built = false;
     };
@@ -3681,7 +3695,7 @@
 
     Farm.prototype.start_tilling = function() {
       this.state.change_state('tilling_soil');
-      return this.state_timer.set_duration(this.till_soil_time * (1 - this.employees.length * .05), true);
+      return this.state_timer.set_duration(this.till_soil_time * (1 - this.employees.length * .05), true, "manual");
     };
 
     Farm.prototype.till_soil = function(clock) {
@@ -3694,7 +3708,7 @@
     Farm.prototype.start_planting = function() {
       this.soil_ready = true;
       this.state.change_state('planting');
-      return this.state_timer.set_duration(this.crop_plots, true);
+      return this.state_timer.set_duration(this.crop_plots, true, "manual");
     };
 
     Farm.prototype.planting = function(clock) {
@@ -3726,7 +3740,7 @@
         this.container.trigger("planting_" + trigger_event);
       }
       this.state.change_state('growing');
-      return this.state_timer.set_duration(this.crop_plots, true);
+      return this.state_timer.set_duration(this.crop_plots, true, "manual");
     };
 
     Farm.prototype.growing = function(clock) {
@@ -3749,7 +3763,7 @@
 
     Farm.prototype.begin_harvest = function() {
       this.state.change_state('harvest');
-      this.state_timer.set_duration(this.harvest_time, true);
+      this.state_timer.set_duration(this.harvest_time, true, "manual");
       return this.last_harvest_amount = 0;
     };
 
@@ -4017,12 +4031,12 @@
 
     DeliveryTruck.prototype.begin_loading = function() {
       this.state.change_state('loading');
-      return this.state_timer.set_duration(10, true);
+      return this.state_timer.set_duration(10, true, "auto");
     };
 
     DeliveryTruck.prototype.begin_unloading = function() {
       this.state.change_state('unloading');
-      return this.state_timer.set_duration(this.storage.get_num_items() * 1, true);
+      return this.state_timer.set_duration(this.storage.get_num_items() * 1, true, "auto");
     };
 
     DeliveryTruck.prototype.set_driver = function(resident) {
@@ -4103,7 +4117,7 @@
         this.destination = destination;
       }
       travel_time = World.gps.get_travel_time_between(this.current_location, this.destination_address, this.drive_speed);
-      this.state_timer.set_duration(travel_time, true);
+      this.state_timer.set_duration(travel_time, true, "auto");
       if (start_driving && this.has_driver()) {
         return this.state.change_state('driving');
       }

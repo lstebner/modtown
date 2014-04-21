@@ -46,11 +46,11 @@ class DeliveryTruck extends StateObject
 
     begin_loading: ->
         @state.change_state('loading')
-        @state_timer.set_duration 10, true
+        @state_timer.set_duration 10, true, "auto"
 
     begin_unloading: ->
         @state.change_state('unloading')
-        @state_timer.set_duration @storage.get_num_items() * 1, true
+        @state_timer.set_duration @storage.get_num_items() * 1, true, "auto"
 
     set_driver: (resident) ->
         return unless @is_parked()
@@ -101,7 +101,7 @@ class DeliveryTruck extends StateObject
             @destination = destination
 
         travel_time = World.gps.get_travel_time_between @current_location, @destination_address, @drive_speed
-        @state_timer.set_duration travel_time, true
+        @state_timer.set_duration travel_time, true, "auto"
         @state.change_state('driving') if start_driving && @has_driver()
 
     return_to_warehouse: ->
