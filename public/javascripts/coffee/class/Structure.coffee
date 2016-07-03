@@ -1,10 +1,23 @@
-# @codekit-append "Farm.coffee"
-# @codekit-append "Factory.coffee"
-# @codekit-append "Housing.coffee"
-# @codekit-append "Warehouse.coffee"
+# @codekit-append "Farm"
+# @codekit-append "Factory"
+# @codekit-append "Housing"
+# @codekit-append "Warehouse"
+# @codekit-append "ConstructionOffice"
+# @codekit-append "HomelessCamp"
 
 class Structure extends RenderedObject
     @storage_capacities: [0, 100, 500, 1000, 10000, 99999999]
+
+    @costs: 
+        excavation: 50
+        housing: 14
+        farm: 15
+        factory: 25
+        warehouse: 18
+        construction_office: 100
+        homeless_camp: 0
+        default: 10
+
     constructor: ->
         super
 
@@ -146,6 +159,7 @@ class Structure extends RenderedObject
                     structure: @
 
         vdata.state = @state
+        vdata.min_employees_to_operate = @opts.min_employees_to_operate
         vdata
 
     needs_workers: ->

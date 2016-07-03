@@ -1,10 +1,14 @@
 class Block extends RenderedObject
-    @costs: 
-        excavation: 50
-        housing: 14
-        farm: 15
-        factory: 25
-        warehouse: 18
+    @allowed_structures: [
+        "excavation", "housing", "farm", "factory", "warehouse",
+        "construction_office", "homeless_camp"
+    ]
+
+    @get_structure_cost: (type="default") ->
+        if Structure.costs.hasOwnProperty(type)
+            Structure.costs[type]
+        else
+            Structure.costs.default
 
     template_id: ->
         "#block-template"
@@ -12,7 +16,6 @@ class Block extends RenderedObject
     constructor: ->
         super
 
-        @type = ''
         @structure = null
         @settings_link = @container.find('[data-action=launch_settings_menu]')
         @settings_menu = null
@@ -26,9 +29,13 @@ class Block extends RenderedObject
         # @set_view_data 'block', { id: @id, type: @type, structure: @structure }
 
     get_view_data: ->
-        id: @id
-        structure: @structure
-        type: @type
+        _.extend(
+            super,
+            id: @id
+            structure: @structure
+            type: @type
+            is_vacant: @is_vacant()
+        )
 
     render: ->
         super
@@ -39,12 +46,26 @@ class Block extends RenderedObject
             @structure.render()
             @settings_link.text @structure.name
 
-    build_structure: (type, address=null) ->
-        switch type
-            when 'housing' then @build_housing address
-            when 'farm' then @build_farm address
-            when 'factory' then @build_factory address
-            when 'warehouse' then @build_warehouse address
+    is_vacant: ->
+        @structure == null
+
+    build_structure: (type, address=null, additional_opts={}) ->
+        structure_class = switch type
+            when 'housing' then Structure.Housing
+            when 'farm' then Structure.Farm
+            when 'factory' then Structure.Factory
+            when 'warehouse' then Structure.Warehouse
+            when 'construction_office' then Structure.ConstructionOffice
+            when 'homeless_camp' then Structure.HomelessCamp
+            else null
+
+        return console.error("failed to find class for #{type}") if structure_class == null
+
+        structure_opts = _.extend
+            address: address
+            , additional_opts
+
+        @structure = new structure_class @container.find(".structure"), structure_opts
 
         #ui updates
         @container.find('.build_actions').remove()
@@ -53,19 +74,11 @@ class Block extends RenderedObject
         @container.find('.structure').data('id', @structure.id).show()
         @setup_settings_menu()
 
+        # todo: shouldn't this be happening with render automatically? 
+        @container.find(".build_btn").hide()
+
+        @type = type
         @structure
-
-    build_housing: (address) ->
-        @structure = new Housing @container.find('.structure'), { address: address }
-
-    build_farm: (address) ->
-        @structure = new Farm @container.find('.structure'), { address: address }
-
-    build_factory: (address) ->
-        @structure = new Factory @container.find('.structure'), { address: address }
-
-    build_warehouse: (address) ->
-        @structure = new Warehouse @container.find('.structure'), { address: address }
 
     settings_menu_items: ->
         if @structure

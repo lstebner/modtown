@@ -18,10 +18,11 @@ for key, crop of some_crops
 
     some_crops[key] = new Crop null, _.extend(crop, { type: key })
 
-class Farm extends Structure
+class Structure.Farm extends Structure
     constructor: ->
         super
 
+        @type = "farm"
         @available_crops = some_crops # @opts.available_crops
         @crop = @opts.crop
         @till_soil_time = WorldClock.duration .3, 'minutes'

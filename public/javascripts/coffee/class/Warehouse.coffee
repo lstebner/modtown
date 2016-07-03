@@ -1,6 +1,6 @@
 # @codekit-prepend "DeliveryTruck.coffee";
 
-class Warehouse extends Structure
+class Structure.Warehouse extends Structure
     constructor: ->
         super
 

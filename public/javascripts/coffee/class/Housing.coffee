@@ -10,10 +10,11 @@ _next_house_name = ->
 
     "Housing Complex #{letters.toUpperCase()}"
 
-class Housing extends Structure
+class Structure.Housing extends Structure
     constructor: ->
         super
 
+        @type = "housing"
         @max_occupants = 12
         @occupants = 0
         @rent_cost = 0
