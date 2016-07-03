@@ -45,9 +45,10 @@ class RenderedObject extends StateObject
         @tmpl = new_tmpl
 
     get_view_data: ->
-        _.extend(
-            id: @id
-            name: @name
+        _.extend({
+                id: @id
+                name: @name
+            }
             @view_data
         )
         

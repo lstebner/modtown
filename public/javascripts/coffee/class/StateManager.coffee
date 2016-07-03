@@ -27,6 +27,22 @@ class StateManager
 
         @bindings[event_name].push fn
 
+    off: (event_name, fn, destroy_all=false) ->
+        if _.has(@bindings, event_name)
+            if destroy_all
+                delete @bindings[event_name]
+            else
+                for func, i in @bindings[event_name]
+                    if func.toString() == fn.toString()
+                        delete @bindings[event_name][i]
+
+
+    trigger: (event_name, data=null) ->
+        return unless _.has @bindings, event_name
+
+        for fn in @bindings[event_name]
+            fn?.apply @, data
+
     queue_state: (state='', change_in=0) ->
         @queued_state = state
 
@@ -42,12 +58,6 @@ class StateManager
 
         if duration > 0
             @queue_state queue_state, duration
-
-    trigger: (event_name, data=null) ->
-        return unless _.has @bindings, event_name
-
-        for fn in @bindings[event_name]
-            fn.apply @, data
 
     record_history: (type='changed') ->
         switch type
