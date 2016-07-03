@@ -2,11 +2,12 @@ class WorldClock
     @max_seconds: 1#60
     @max_minutes: 60
     @minutes_in_hour: WorldClock.max_minutes
-    @max_hours: 10
+    @max_hours: 24
     @hours_in_day: WorldClock.max_hours
     @max_days: 30
+    @days_in_week: 7
     @days_in_month: WorldClock.max_days
-    @max_months: 16
+    @max_months: 12
     @months_in_year: WorldClock.max_months
     @days_in_year: WorldClock.max_days * WorldClock.max_months
     @seconds_in_minute: WorldClock.max_seconds
@@ -28,6 +29,10 @@ class WorldClock
 
         in_seconds
 
+    # shorthand
+    dur: (amount, of_what='second') ->
+        WorldClock.duration amount, of_what
+
     constructor: ->
         @time_speedx = 1
         @since_epoch = 0
@@ -39,7 +44,7 @@ class WorldClock
         @year = 0
 
         #skip ahead in time randomly somewhere in the next 10 years
-        @since_epoch = WorldClock.duration Math.random() * 10, 'years'
+        @since_epoch = @dur("6", "hours") #WorldClock.duration Math.random() * 10, 'years'
         @epoch_skewed = false
         @paused = false
 
@@ -80,8 +85,8 @@ class WorldClock
             @second = @since_epoch  % WorldClock.max_seconds
         @minute = @since_epoch / WorldClock.seconds_in_minute % WorldClock.max_minutes
         @hour = @since_epoch / WorldClock.seconds_in_hour % WorldClock.max_hours
-        @day = Math.floor @since_epoch / WorldClock.seconds_in_day % WorldClock.max_days
         @month = Math.floor @since_epoch / WorldClock.seconds_in_month % WorldClock.max_months
+        @day = 1 + Math.floor @since_epoch / WorldClock.seconds_in_day % WorldClock.max_days
         @year = Math.floor @since_epoch / WorldClock.seconds_in_year
 
         @update_timers()
@@ -100,13 +105,16 @@ class WorldClock
         @now() % WorldClock.seconds_in_day
 
     is_morning: ->
-        @since_midnight() < WorldClock.duration('3', 'hours')
+        @since_midnight() > @dur('6', 'hours') && @since_midnight() < @dur("11", "hours")
 
     is_night: ->
-        @since_midnight() > WorldClock.duration('7', 'hours')
+        @now() >= @dur(WorldClock.hours_in_a_day - 3, 'hours') || @since_midnight() < @dur('6', 'hours')
+
+    is_evening: ->
+        @now() >= @dur('6', 'hours') && !@is_night()
 
     is_afternoon: ->
-        !@is_morning() && !@is_night()
+        !@is_morning() && !@is_evening() && !@is_night()
 
     is_am: ->
         @since_midnight() < WorldClock.max_hours / 2
@@ -159,7 +167,10 @@ class WorldClock
             @second
 
     get_day: ->
-        Calendar.get_day @day
+        Calendar.get_day @day_in_year() % WorldClock.days_in_week
+
+    get_day_in_month: ->
+        @day
 
     get_year: ->
         @year + 1
@@ -200,6 +211,9 @@ class WorldClock
 
     pause_time: ->
         @paused = true
+
+    ampm: ->
+        ampm = if @hours >= 12 then 'pm' else 'am'
 
     resume_time: ->
         @paused = false

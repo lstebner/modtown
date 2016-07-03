@@ -14,6 +14,7 @@ class ModTownGame extends RenderedObject
         @state = new StateManager('init')
         @setup_player()
         @setup_hud()
+        @setup_overworld()
         @setup_town()
         @setup_events()
 
@@ -38,7 +39,11 @@ class ModTownGame extends RenderedObject
         @town = new Town @container.find('#town'), town_opts
 
         _.defer =>
-            @town.create_street({ blocks: 6 });
+            @town.create_street({ blocks: 2 })
+            @town.create_street({ blocks: 2 })
+
+    setup_overworld: ->
+        @overworld = new Overworld()
 
     setup_hud: ->
         @hud = new HUD @container.find('#hud'), { town: @town }
@@ -92,8 +97,13 @@ class ModTownGame extends RenderedObject
         #we handle all other elements below
         super
 
-        @hud.render()
-        @town.render()
+        switch @state.current()
+            when 'running'
+                @hud.render()
+                @town.render()
+
+            when 'overworld'
+                @hud.render()
 
 $ ->
     World.game = new ModTownGame "#container"

@@ -1,6 +1,6 @@
 class WeatherSystem
     @seasons: ['Spring', 'Summer', 'Fall', 'Winter']
-    @months_in_season: 4
+    @months_in_season: 3
     @days_in_season: WeatherSystem.months_in_season * WorldClock.days_in_month
     @get_season: (month) ->
         WeatherSystem.seasons[Math.floor(month / WeatherSystem.months_in_season) % Calendar.seasons.length]
