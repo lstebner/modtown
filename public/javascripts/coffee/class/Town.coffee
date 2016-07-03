@@ -3,8 +3,9 @@ class Town extends RenderedObject
         street: 100
     @extra_visitors: true
     @visitor_chance: if Town.extra_visitors then .15 else .05
-    @visitors_all_day: true
+    @no_visitors_at_night: false 
     @night_farming: true
+    @max_visitors = 12
 
     default_opts: ->
         _.extend(
@@ -24,6 +25,7 @@ class Town extends RenderedObject
         @balance = @opts.balance
         @spent = 0
         @occupancy_percent = 0
+        @is_night = false
 
         @next_street_id = 0
         @next_resident_id = 0
@@ -50,6 +52,8 @@ class Town extends RenderedObject
         @render_visitors()
 
     update: (clock) ->
+        @is_night = clock.is_night()
+
         for s in @streets
             s.update(clock)
 
@@ -58,9 +62,83 @@ class Town extends RenderedObject
 
         @get_occupancy_percent()
 
-        if @visitors.length < 12 && @occupancy_percent < .8 && (Town.visitors_all_day || clock.is_afternoon())
-            if Math.random() < Town.visitor_chance
-                @create_visitor()
+        @update_visitors(clock)
+
+    get_view_data: ->
+        {
+            is_night: @is_night
+        }
+
+    update_visitors: (clock) ->
+        return unless @meets_minimum_reqs_for_visitors()
+
+        alter_chance = 1
+
+        if @visitors.length >= Town.max_visitors
+            alter_chance = -1
+        else if @is_night
+            if Town.no_visitors_at_night
+                alter_chance = -1
+            else
+                alter_chance = .5
+        else if clock.is_afternoon()
+            alter_chance += .05
+
+        if @occupancy_percent < .2
+            alter_chance += .1
+        else if @occupancy_percent > .85
+            alter_chance -= .1
+
+        visitor_chance = if alter_chance
+            Town.visitor_chance * alter_chance
+        else
+            Town.visitor_chance
+
+        die_roll = Math.random() * 100
+
+        if die_roll < visitor_chance * 80
+            @create_visitor()
+
+    meets_minimum_reqs_for_visitors: ->
+        reqs_met = false
+
+        # gather data
+        num_construction_offices = @num_structures_in_town "construction_office"
+        num_housing = @num_structures_in_town "housing"
+
+        # decide if reqs are met
+        reqs_met = num_construction_offices > 0 && num_housing > 0
+        reqs_met
+
+    num_structures_in_town: (only_type=false) ->
+        count = 0
+        for street in @streets
+            count += street.num_structures_on_street only_type
+
+        count
+
+    get_structures: (only_type=false) ->
+        structures = []
+        for street in @streets
+            structs = street.get_structures only_type
+            unless _.isEmpty(structs)
+                for s in structs
+                    structures.push(s) 
+
+        structures
+
+    find_housing_with_vacancy: (amount=-1) ->
+        housing = @get_structures "housing"
+
+        housing_with_vacancy = for h in housing
+            h if h.has_vacancy()
+
+        if amount < 0
+            housing
+        else if amount == 1
+            housing[0]
+        else
+            _.first housing, amount
 
     _street_id: ->
         @next_street_id += 1
@@ -74,15 +152,14 @@ class Town extends RenderedObject
     create_street: (props={}) ->
         if !@funds_available(Town.costs.street)
             new FundsNotAvailableAlert()
-            throw('Funds not available')
+            console.error('Funds not available')
             return false
 
         @spend_funds Town.costs.street
 
-
         props = @_street_props props
 
-        $new_street = $ @street_tmpl({ id: props.id })
+        $new_street = $ @street_tmpl({ id: props.id, editable: false })
         @container.find('.streets').append($new_street)
         new_street = new Street @container.find(".street[data-id=#{props.id}]"), props
         @streets.push new_street
@@ -95,11 +172,13 @@ class Town extends RenderedObject
 
         return unless street
 
-        if !@funds_available(Block.costs.excavation)
-            new FundsNotAvailableAlert()
-            return throw('Funds not available')
+        excavation_cost = Block.get_structure_cost("excavation")
 
-        @spend_funds Block.costs.excavation
+        if !@funds_available excavation_cost
+            new FundsNotAvailableAlert()
+            return console.error('Funds not available')
+
+        @spend_funds excavation_cost
 
         new_block = street.create_block props
         @blocks.push new_block
@@ -150,10 +229,11 @@ class Town extends RenderedObject
         @residents.push visitor
         @resident_ids_to_index[visitor.id] = @residents.length - 1
         @remove_visitor visitor_id
+        visitor
 
     get_resident: (id) ->
         if !_.has @resident_ids_to_index, id
-            throw('resident ID not found')
+            console.error('resident ID not found')
             return false
 
         @residents[@resident_ids_to_index[id]]
@@ -198,13 +278,15 @@ class Town extends RenderedObject
         @occupancy_percent = total / structure_ids.length
 
     build_structure: (type, street_id, block_id) ->
-        if !_.has(Block.costs, type)
-            return throw('Bad type')
-        if !@funds_available(Block.costs[type])
-            new FundsNotAvailableAlert()
-            return throw('Funds not available')
+        if _.indexOf(Block.allowed_structures, type) < 0
+            return console.error('Bad type')
 
-        @spend_funds Block.costs[type]
+        block_cost = Block.get_structure_cost type
+        if !@funds_available block_cost
+            new FundsNotAvailableAlert()
+            return console.error('Funds not available')
+
+        @spend_funds block_cost
 
         street_id = @street_ids_to_index[street_id]
 
@@ -212,7 +294,7 @@ class Town extends RenderedObject
         new_structure = @streets[street_id].build_structure(type, block_id)
 
         if !new_structure
-            return throw('Error creating structure')
+            return console.error('Error creating structure')
 
         @structures.push(new_structure)
         @structure_ids_to_index[new_structure.id] = @structures.length - 1
@@ -221,6 +303,9 @@ class Town extends RenderedObject
             @structures_by_type[type] = []
 
         @structures_by_type[type].push(@structures.length - 1)
+
+        # todo: create requirements for structures to be created and
+        # return errors here when they aren't met
 
         new_structure
 
@@ -274,12 +359,16 @@ class Town extends RenderedObject
                                 workers: @get_available_workers()
                                 open: true
                                 position_for: [e.clientX, e.clientY]
+                                funds_available: @balance
+
+                            hire_workers_menu.container.one "hire:outsource_hire", (e, cost) =>
+                                @outsource_hire(cost, hire_workers_menu.job)
 
                 when 'request_warehouse_pickup'
                     structure_id = $el.closest('.structure').data('id')
                     structure = @get_structure structure_id
                     
-                    console.log structure, _.has(@structures_by_type, 'warehouse')
+                    console.log "request warehouse pickup", structure, _.has(@structures_by_type, 'warehouse')
                     if structure && _.has(@structures_by_type, 'warehouse')
                         warehouse = @structures[_.first @structures_by_type['warehouse']]
                         warehouse.queue_pickup structure
@@ -314,8 +403,48 @@ class Town extends RenderedObject
             workers.push(r) if !r.is_employed()
 
         workers
-            
 
+    get_vacant_blocks: ->
+        vacancies = []
+        for street in @streets
+            for block in street.blocks
+                if block.is_vacant()
+                    vacancies.push [street.id, block.id]
+        vacancies
+
+    outsource_hire: (cost, job) ->
+        if !@funds_available cost
+            return console.error "not enough funds to outsource hire" 
+
+        @spend_funds cost
+
+        newhire = @create_visitor()
+        @convert_visitor_to_resident newhire.id
+        new_home = @find_home()
+        new_home.move_resident_in newhire
+        job.employ_resident newhire
+        console.log "outsource resident moved in and hired"
+
+        newhire
+
+    build_homeless_camp: ->
+        vacancies = @get_vacant_blocks()
+        console.error "no vacancies!" unless vacancies.length
+        @build_structure "homeless_camp", vacancies[0][0], vacancies[0][1]
+        
+    find_home: ->
+        num_housing = @num_structures_in_town "housing"
+        homeless_camps = @get_structures "homeless_camp"
+
+        chosen_home = if num_housing < 1
+            if _.isEmpty(homeless_camps)
+                @build_homeless_camp()
+            else
+                homeless_camps[0]
+        else
+            @find_housing_with_vacancy(1)
+
+        chosen_home
 
 
 

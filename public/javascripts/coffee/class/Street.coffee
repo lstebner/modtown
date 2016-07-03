@@ -70,4 +70,39 @@ class Street extends RenderedObject
         @structure_ids_to_index[new_structure.id] = @structures.length - 1
         new_structure
 
+    all_structure_types_on_street: (return_counts=false) ->
+        types = []
+        counts_by_type = {}
+        for block in @blocks
+            if block.structure
+                if return_counts
+                    counts_by_type[block.structure.type] ||= 0
+                    counts_by_type[block.structure.type]++
+                else
+                    types.push block.structure.type
+
+        if return_counts
+            for key, val of counts_by_type
+                types.push [key, val]
+
+        types
+
+    num_structures_on_street: (only_type=false) ->
+        count = 0
+        for block in @blocks
+            unless block.is_vacant()
+                if !only_type || only_type == block.structure.type
+                    count++
+
+        count
+
+    get_structures: (only_type=false) ->
+        structures = []
+        for block in @blocks
+            unless block.is_vacant()
+                if !only_type || only_type == block.structure.type
+                    structures.push block.structure
+
+        structures
+
     setup_events: ->
