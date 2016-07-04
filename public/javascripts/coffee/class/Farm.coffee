@@ -1,267 +1,267 @@
 # @codekit-prepend "Crop.coffee";
 
 some_crops = 
-    wheat:
-        name: 'Wheat'
-    potatos:
-        name: 'Potatos'
-    carrots: 
-        name: 'Carrots'
-    rice:
-        name: 'Rice'
-    grapes:
-        name: 'Grapes'
+  wheat:
+    name: 'Wheat'
+  potatos:
+    name: 'Potatos'
+  carrots: 
+    name: 'Carrots'
+  rice:
+    name: 'Rice'
+  grapes:
+    name: 'Grapes'
 
 some_crop_menu_items = {}
 for key, crop of some_crops
-    some_crop_menu_items[key] = crop.name
+  some_crop_menu_items[key] = crop.name
 
-    some_crops[key] = new Crop null, _.extend(crop, { type: key })
+  some_crops[key] = new Crop null, _.extend(crop, { type: key })
 
 class Structure.Farm extends Structure
-    constructor: ->
-        super
+  constructor: ->
+    super
 
-        @type = "farm"
-        @available_crops = some_crops # @opts.available_crops
-        @crop = @opts.crop
-        @till_soil_time = WorldClock.duration .3, 'minutes'
-        @harvest_time = 0
-        @soil_ready = false
-        @acres = 1 #1 acre in sq ft = 43560
-        @crop_plots = 0
-        @plots_per_acre = 0
-        @current_growth_percent = 0
-        @planted_crops = []
-        @harvested_crops = []
-        @last_harvest_amount = 0
-        @state_timer = new Timer()
+    @type = "farm"
+    @available_crops = some_crops # @opts.available_crops
+    @crop = @opts.crop
+    @till_soil_time = WorldClock.duration .3, 'minutes'
+    @harvest_time = 0
+    @soil_ready = false
+    @acres = 1 #1 acre in sq ft = 43560
+    @crop_plots = 0
+    @plots_per_acre = 0
+    @current_growth_percent = 0
+    @planted_crops = []
+    @harvested_crops = []
+    @last_harvest_amount = 0
+    @state_timer = new Timer()
 
-        @plots_available()
+    @plots_available()
+  
+  default_opts: ->
+    _.extend(
+      super,
+      name: 'Skillet Farms'
+      construction_time: WorldClock.duration 5, 'seconds'
+      crop: null
+      available_crops: []
+    )
+
+  get_view_data: ->
+    return super if @is_under_construction()
+
+    percent_complete = if @state.current() == "growing"
+      @current_growth_percent
+    else
+      @state_timer.percent_complete()
+
+    _.extend(
+      super,
+      num_employees: @employees.length
+      crop: @crop
+      crop_state: @crop_state
+      state: @state
+      percent_complete: Math.min 100, Math.round(percent_complete * 100)
+      soil_ready: @soil_ready
+      harvested_crops: @harvested_crops
+      planted_crops: @planted_crops
+      crops_harvested: @last_harvest_amount
+      crops_stored: @storage.get_num_items()
+    )
+
+  template_id: ->
+    '#farm-template'
+
+  settings_menu_items: ->
+    view_info: 'Stats'
+    change_crop: 'Change Crop'
+    close: 'Close'
+
+  begin_construction: ->
+    @construction_time = WorldClock.duration(10, 'seconds')
+    super
+
+  setup_events: ->
+    @container.on 'click', (e) =>
+      e.preventDefault()
+      $el = $(e.target)
+
+      switch $el.data('action')
+        when 'select_crop'
+          select_crop_menu = new SelectCropMenu null, 
+            open: true
+            items: some_crop_menu_items
+            position_for: [e.clientX, e.clientY]
+          select_crop_menu.container.on 'item_selected', (e, value) =>
+            if _.has @available_crops, value
+              @set_crop @available_crops[value]
+
+        when 'start_tilling' then @state.change_state('start_tilling')
+
+  operating: (clock) ->
+    super
     
-    default_opts: ->
-        _.extend(
-            super,
-            name: 'Skillet Farms'
-            construction_time: WorldClock.duration 5, 'seconds'
-            crop: null
-            available_crops: []
-        )
+    switch @state.current()
+      #Structure triggers this one by default when construction completes
+      when 'operating' then @state.change_state('idle')
+      when 'idle' then @idle()
+      when 'start_tilling' then @start_tilling()
+      when 'tilling_soil' then @till_soil(clock)
+      when 'planting' then @planting(clock)
+      when 'growing' then @growing(clock)
+      when 'harvest' then @harvest(clock)
+      when 'reset' then @reset(clock)
 
-    get_view_data: ->
-        return super if @is_under_construction()
+  idle: ->
 
-        percent_complete = if @state.current() == "growing"
-            @current_growth_percent
-        else
-            @state_timer.percent_complete()
+  can_change_crop: ->
+    return @state.current() == "idle"
 
-        _.extend(
-            super,
-            num_employees: @employees.length
-            crop: @crop
-            crop_state: @crop_state
-            state: @state
-            percent_complete: Math.min 100, Math.round(percent_complete * 100)
-            soil_ready: @soil_ready
-            harvested_crops: @harvested_crops
-            planted_crops: @planted_crops
-            crops_harvested: @last_harvest_amount
-            crops_stored: @storage.get_num_items()
-        )
+  crops_per_acre: ->
+    return unless @crop
 
-    template_id: ->
-        '#farm-template'
+    # 43560 is the amount of real sq ft per acre. Not sure if that'll work
+    # for our game though honestly
+    @plots_per_acre = 10 / @crop.spacing
+    @crop_plots = Math.floor(@plots_per_acre * @acres)
+    @harvest_time = @crop_plots
 
-    settings_menu_items: ->
-        view_info: 'Stats'
-        change_crop: 'Change Crop'
-        close: 'Close'
+    @plots_per_acre
 
-    begin_construction: ->
-        @construction_time = WorldClock.duration(10, 'seconds')
-        super
+  total_plots: ->
+    Math.floor(@plots_per_acre * @acres)
 
-    setup_events: ->
-        @container.on 'click', (e) =>
-            e.preventDefault()
-            $el = $(e.target)
+  plots_available: ->
+    @total_plots() - @planted_crops.length
 
-            switch $el.data('action')
-                when 'select_crop'
-                    select_crop_menu = new SelectCropMenu null, 
-                        open: true
-                        items: some_crop_menu_items
-                        position_for: [e.clientX, e.clientY]
-                    select_crop_menu.container.on 'item_selected', (e, value) =>
-                        if _.has @available_crops, value
-                            @set_crop @available_crops[value]
+  set_crop: (new_crop, start_planting=true) ->
+    return unless @can_change_crop()
 
-                when 'start_tilling' then @state.change_state('start_tilling')
+    @crop = new_crop
+    @crops_per_acre()
 
-    operating: (clock) ->
-        super
-        
-        switch @state.current()
-            #Structure triggers this one by default when construction completes
-            when 'operating' then @state.change_state('idle')
-            when 'idle' then @idle()
-            when 'start_tilling' then @start_tilling()
-            when 'tilling_soil' then @till_soil(clock)
-            when 'planting' then @planting(clock)
-            when 'growing' then @growing(clock)
-            when 'harvest' then @harvest(clock)
-            when 'reset' then @reset(clock)
+    if start_planting
+      if @state.current() != 'idle'
+        @reset()
+      else
+        @start_tilling() 
 
-    idle: ->
+  start_tilling: ->
+    @state.change_state('tilling_soil')
+    @state_timer.set_duration (@till_soil_time * (1 - @employees.length * .05)), true, "auto"
 
-    can_change_crop: ->
-        return @state.current() == "idle"
+  till_soil: (clock) ->
+    if @state_timer.is_complete()
+      @start_planting()
 
-    crops_per_acre: ->
-        return unless @crop
+  start_planting: ->
+    @soil_ready = true
+    @state.change_state('planting')
+    @state_timer.set_duration @crop_plots, true, "manual"
 
-        # 43560 is the amount of real sq ft per acre. Not sure if that'll work
-        # for our game though honestly
-        @plots_per_acre = 10 / @crop.spacing
-        @crop_plots = Math.floor(@plots_per_acre * @acres)
-        @harvest_time = @crop_plots
+  planting: (clock) ->
+    return unless clock.is_afternoon() || Town.night_farming
 
-        @plots_per_acre
+    # Planting
+    # Each plant requires a certain amount of time to be planted
+    # The farm has a certain number of "plots" available to plant on
+    # Planting is complete when every plot has a plant in it. 
 
-    total_plots: ->
-        Math.floor(@plots_per_acre * @acres)
+    last = if @planted_crops.length
+      @planted_crops.length - 1
+    else
+      false
 
-    plots_available: ->
-        @total_plots() - @planted_crops.length
+    #if the last plant is not done planting yet then give it priority
+    if last != false && !@planted_crops[last].fully_planted()
+      @planted_crops[last].update(clock)
 
-    set_crop: (new_crop, start_planting=true) ->
-        return unless @can_change_crop()
+      if @planted_crops[last].fully_planted()
+        @state_timer.update()
+    #otherwise, start a new plant
+    else if @planted_crops.length < @crop_plots
+      new_plant = new Crop null, @available_crops[@crop.type]
+      new_plant.start_planting()
+      @planted_crops.push new_plant
 
-        @crop = new_crop
-        @crops_per_acre()
+    if @state_timer.is_complete()
+      @finish_planting()
 
-        if start_planting
-            if @state.current() != 'idle'
-                @reset()
-            else
-                @start_tilling() 
+  #transition state
+  finish_planting: (trigger_event='complete') ->
+    @container.trigger("planting_#{trigger_event}") if trigger_event?
+    @state.change_state('growing')
+    @state_timer.set_duration @crop_plots, true, "manual"
 
-    start_tilling: ->
-        @state.change_state('tilling_soil')
-        @state_timer.set_duration (@till_soil_time * (1 - @employees.length * .05)), true, "auto"
+  growing: (clock) ->
+    total_growth_percent = 0
 
-    till_soil: (clock) ->
-        if @state_timer.is_complete()
-            @start_planting()
+    for c in @planted_crops
+      c.update(clock)
+      total_growth_percent += c.current_growth_percent()
 
-    start_planting: ->
-        @soil_ready = true
-        @state.change_state('planting')
-        @state_timer.set_duration @crop_plots, true, "manual"
+      if c.fully_grown()
+        @state_timer.update()
 
-    planting: (clock) ->
-        return unless clock.is_afternoon() || Town.night_farming
+    @current_growth_percent = total_growth_percent / @planted_crops.length
 
-        # Planting
-        # Each plant requires a certain amount of time to be planted
-        # The farm has a certain number of "plots" available to plant on
-        # Planting is complete when every plot has a plant in it. 
+    if @state_timer.is_complete()
+      @begin_harvest()
 
-        last = if @planted_crops.length
-            @planted_crops.length - 1
-        else
-            false
+  begin_harvest: ->
+    @state.change_state('harvest')
+    @state_timer.set_duration @harvest_time, true, "manual"
+    @last_harvest_amount = 0
 
-        #if the last plant is not done planting yet then give it priority
-        if last != false && !@planted_crops[last].fully_planted()
-            @planted_crops[last].update(clock)
+  harvest: (clock) ->
+    #once we run out of plots, we are done planting
+    last = if @harvested_crops.length
+      @harvested_crops.length - 1
+    else
+      false
 
-            if @planted_crops[last].fully_planted()
-                @state_timer.update()
-        #otherwise, start a new plant
-        else if @planted_crops.length < @crop_plots
-            new_plant = new Crop null, @available_crops[@crop.type]
-            new_plant.start_planting()
-            @planted_crops.push new_plant
+    #if the last plant is not done planting yet then give it priority
+    if last != false && !@harvested_crops[last].fully_harvested()
+      @harvested_crops[last].update(clock)
 
-        if @state_timer.is_complete()
-            @finish_planting()
+      if @harvested_crops[last].fully_harvested()
+        @state_timer.update()
+        @last_harvest_amount += @harvested_crops[last].harvested_amount()
 
-    #transition state
-    finish_planting: (trigger_event='complete') ->
-        @container.trigger("planting_#{trigger_event}") if trigger_event?
-        @state.change_state('growing')
-        @state_timer.set_duration @crop_plots, true, "manual"
+    #otherwise, start a new plant
+    else if @planted_crops.length > 0
+      next_plant = @planted_crops.shift()
+      next_plant.start_harvest()
+      @harvested_crops.push next_plant
+    else if !@planted_crops.length && last && @harvested_crops[last].fully_harvested()
+      console.log('Plant harvest count mismatch, finishing')
+      while !@state_timer.is_complete()
+        @state_timer.update(clock)
 
-    growing: (clock) ->
-        total_growth_percent = 0
+    if @state_timer.is_complete()
+      @finish_harvest()
 
-        for c in @planted_crops
-            c.update(clock)
-            total_growth_percent += c.current_growth_percent()
+  finish_harvest: ->
+    @last_harvest_amount = 0
+    crop_type = @harvested_crops[0].type
 
-            if c.fully_grown()
-                @state_timer.update()
+    while crop = @harvested_crops.shift()
+      @last_harvest_amount += crop.harvested_amount()
 
-        @current_growth_percent = total_growth_percent / @planted_crops.length
+    couldnt_fit = @store_items crop_type, @last_harvest_amount, false
 
-        if @state_timer.is_complete()
-            @begin_harvest()
+    if couldnt_fit > 0
+      throw("Wasnt enough room to store #{couldnt_fit} Crops")
 
-    begin_harvest: ->
-        @state.change_state('harvest')
-        @state_timer.set_duration @harvest_time, true, "manual"
-        @last_harvest_amount = 0
+    @state.change_state('idle')
 
-    harvest: (clock) ->
-        #once we run out of plots, we are done planting
-        last = if @harvested_crops.length
-            @harvested_crops.length - 1
-        else
-            false
+  reset: (clock) ->
+    @state.change_state('idle')        
+    @current_growth_percent = 0
 
-        #if the last plant is not done planting yet then give it priority
-        if last != false && !@harvested_crops[last].fully_harvested()
-            @harvested_crops[last].update(clock)
-
-            if @harvested_crops[last].fully_harvested()
-                @state_timer.update()
-                @last_harvest_amount += @harvested_crops[last].harvested_amount()
-
-        #otherwise, start a new plant
-        else if @planted_crops.length > 0
-            next_plant = @planted_crops.shift()
-            next_plant.start_harvest()
-            @harvested_crops.push next_plant
-        else if !@planted_crops.length && last && @harvested_crops[last].fully_harvested()
-            console.log('Plant harvest count mismatch, finishing')
-            while !@state_timer.is_complete()
-                @state_timer.update(clock)
-
-        if @state_timer.is_complete()
-            @finish_harvest()
-
-    finish_harvest: ->
-        @last_harvest_amount = 0
-        crop_type = @harvested_crops[0].type
-
-        while crop = @harvested_crops.shift()
-            @last_harvest_amount += crop.harvested_amount()
-
-        couldnt_fit = @store_items crop_type, @last_harvest_amount, false
-
-        if couldnt_fit > 0
-            throw("Wasnt enough room to store #{couldnt_fit} Crops")
-
-        @state.change_state('idle')
-
-    reset: (clock) ->
-        @state.change_state('idle')        
-        @current_growth_percent = 0
-
-    replant: ->
-        @state.change_state('.planting')
+  replant: ->
+    @state.change_state('.planting')
 
 
 

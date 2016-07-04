@@ -1,21 +1,21 @@
 class SelectCropMenu extends FloatingMenu
-    constructor: ->
-        super
+  constructor: ->
+    super
 
-        @crops = @opts.crops
+    @crops = @opts.crops
 
-        @view_data = @get_view_data()
+    @view_data = @get_view_data()
 
-        @render(true)
+    @render(true)
 
-    default_opts: ->
-        _.extend(
-            super,
-            title: 'Select Crop'
-            items: []
-        )
+  default_opts: ->
+    _.extend(
+      super,
+      title: 'Select Crop'
+      items: []
+    )
 
-    trigger: ->
-        super
+  trigger: ->
+    super
 
-        @destroy()
+    @destroy()

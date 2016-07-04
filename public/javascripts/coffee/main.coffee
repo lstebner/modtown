@@ -23,6 +23,8 @@ pin = (extra=null) ->
 # @codekit-prepend "class/Town.coffee"
 # @codekit-prepend "class/Street.coffee"
 # @codekit-prepend "class/Block.coffee"
+# @codekit-prepend "class/Biome.coffee"
+# @codekit-prepend "class/Overworld.coffee"
 # @codekit-prepend "class/Resident.coffee"
 # @codekit-prepend "class/Structure.coffee"
 # @codekit-prepend "class/Player.coffee"

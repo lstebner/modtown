@@ -1,32 +1,32 @@
 class SelectHouseMenu extends FloatingMenu
-    constructor: ->
-        super
+  constructor: ->
+    super
 
-        @housing = @opts.housing
+    @housing = @opts.housing
 
-        @setup_items()
+    @setup_items()
 
-    setup_items: ->
-        return unless @housing
+  setup_items: ->
+    return unless @housing
 
-        @items = {}
+    @items = {}
 
-        for house in @housing
-            @items["house_#{house.id}"] = house.name
+    for house in @housing
+      @items["house_#{house.id}"] = house.name
 
-        @render(true)
+    @render(true)
 
-    default_opts: ->
-        _.extend(
-            super,
-            title: 'Select Home'
-            housing: []
-        )
+  default_opts: ->
+    _.extend(
+      super,
+      title: 'Select Home'
+      housing: []
+    )
 
-    trigger: (event_name='item_selected', value=null) ->
-        super
+  trigger: (event_name='item_selected', value=null) ->
+    super
 
-        if event_name == 'item_selected'
-            @trigger 'house_selected', value
+    if event_name == 'item_selected'
+      @trigger 'house_selected', value
 
-        @destroy()
+    @destroy()
