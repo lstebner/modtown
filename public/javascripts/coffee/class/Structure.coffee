@@ -65,14 +65,24 @@ class Structure extends RenderedObject
       switch $el.data('action')
         when 'launch_settings_menu' then @open_settings_menu()
 
+  #meant to be overridden by subclasses
+  settings_menu_items: ->
+    close: 'Close'
+
+  #meant to be subclasses as well for handling specific events
+  settings_item_selected: (name) ->
+
   setup_settings_menu: ->
+    items = @settings_menu_items()
+    console.log 'settings items', items
+
     @settings_menu = new StructureMenu null,
       title: @name
-      items:
-        cancel: 'Close'
+      items: items
 
-  open_settings_menu: ->
-    return unless @settings_menu
+  open_settings_menu: (recreate=false) ->
+    unless @settings_menu || recreate
+      @setup_settings_menu()
 
     @settings_menu.open()
 
@@ -129,13 +139,6 @@ class Structure extends RenderedObject
 
   has_jobs_available: ->
     !!(@max_employees > 0 && @employees.length < @max_employees && !@is_under_construction())
-
-  #meant to be overridden by subclasses
-  settings_menu_items: ->
-    close: 'Close'
-
-  #meant to be subclasses as well for handling specific events
-  settings_item_selected: (name) ->
 
   get_view_data: ->
     vdata = {}

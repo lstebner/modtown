@@ -10,3 +10,9 @@ class Structure.HomelessCamp extends Structure.Housing
       name: "Homeless Camp"
     )
 
+  settings_menu_items: ->
+    _.extend(
+      super,
+      convert: "Convert"
+    )
+

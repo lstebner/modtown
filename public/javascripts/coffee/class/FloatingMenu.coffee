@@ -27,11 +27,18 @@ class FloatingMenu extends Popup
   setup_events: ->
     super
 
+    @container.on 'item_selected', (e, value) =>
+      @item_selected value
+
     @container.on 'click', (e) =>
       $el = $(e.target)
 
       if $el.is('.btn')
         @trigger 'item_selected', $el.data('action')
+
+  item_selected: (value) ->
+    switch value
+      when 'close' then @close()
       
 
 

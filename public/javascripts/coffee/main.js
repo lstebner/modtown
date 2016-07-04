@@ -1422,6 +1422,11 @@
 
     FloatingMenu.prototype.setup_events = function() {
       FloatingMenu.__super__.setup_events.apply(this, arguments);
+      this.container.on('item_selected', (function(_this) {
+        return function(e, value) {
+          return _this.item_selected(value);
+        };
+      })(this));
       return this.container.on('click', (function(_this) {
         return function(e) {
           var $el;
@@ -1431,6 +1436,13 @@
           }
         };
       })(this));
+    };
+
+    FloatingMenu.prototype.item_selected = function(value) {
+      switch (value) {
+        case 'close':
+          return this.close();
+      }
     };
 
     return FloatingMenu;
@@ -3168,13 +3180,9 @@
     };
 
     Block.prototype.settings_menu_items = function() {
-      if (this.structure) {
-        return this.structure.settings_menu_items();
-      } else {
-        return {
-          close: 'Close'
-        };
-      }
+      return {
+        close: 'Close'
+      };
     };
 
     Block.prototype.setup_settings_menu = function() {
@@ -3193,6 +3201,9 @@
     };
 
     Block.prototype.launch_settings_menu = function() {
+      if (this.structure) {
+        return this.structure.open_settings_menu();
+      }
       if (!this.settings_menu) {
         this.setup_settings_menu();
       }
@@ -3451,19 +3462,31 @@
       })(this));
     };
 
+    Structure.prototype.settings_menu_items = function() {
+      return {
+        close: 'Close'
+      };
+    };
+
+    Structure.prototype.settings_item_selected = function(name) {};
+
     Structure.prototype.setup_settings_menu = function() {
+      var items;
+      items = this.settings_menu_items();
+      console.log('settings items', items);
       return this.settings_menu = new StructureMenu(null, {
         title: this.name,
-        items: {
-          cancel: 'Close'
-        }
+        items: items
       });
     };
 
-    Structure.prototype.open_settings_menu = function() {
+    Structure.prototype.open_settings_menu = function(recreate) {
       var ref;
-      if (!this.settings_menu) {
-        return;
+      if (recreate == null) {
+        recreate = false;
+      }
+      if (!(this.settings_menu || recreate)) {
+        this.setup_settings_menu();
       }
       this.settings_menu.open();
       return (ref = this.settings_menu.container) != null ? ref.one("item_selected", (function(_this) {
@@ -3540,14 +3563,6 @@
     Structure.prototype.has_jobs_available = function() {
       return !!(this.max_employees > 0 && this.employees.length < this.max_employees && !this.is_under_construction());
     };
-
-    Structure.prototype.settings_menu_items = function() {
-      return {
-        close: 'Close'
-      };
-    };
-
-    Structure.prototype.settings_item_selected = function(name) {};
 
     Structure.prototype.get_view_data = function() {
       var vdata;
@@ -4617,6 +4632,12 @@
     HomelessCamp.prototype.default_opts = function() {
       return _.extend(HomelessCamp.__super__.default_opts.apply(this, arguments), {
         name: "Homeless Camp"
+      });
+    };
+
+    HomelessCamp.prototype.settings_menu_items = function() {
+      return _.extend(HomelessCamp.__super__.settings_menu_items.apply(this, arguments), {
+        convert: "Convert"
       });
     };
 

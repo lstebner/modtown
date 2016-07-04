@@ -81,10 +81,7 @@ class Block extends RenderedObject
     @structure
 
   settings_menu_items: ->
-    if @structure
-      @structure.settings_menu_items()
-    else
-      close: 'Close'
+    close: 'Close'
 
   setup_settings_menu: ->
     @settings_menu.destroy() if @settings_menu
@@ -93,15 +90,21 @@ class Block extends RenderedObject
       title: if @structure then @structure.name else "Block #{@id}"
       items: @settings_menu_items()
 
+    # todo: consider removing in favor of the menus handling all the logic inside themselves
+    # see FloatingMenu#item_selected
     @settings_menu.container.on 'item_selected', (e, value) =>
       @settings_item_selected value
 
   launch_settings_menu: ->
+    if @structure
+      return @structure.open_settings_menu()
+
     if !@settings_menu
       @setup_settings_menu()
 
     @settings_menu.open()
 
+  # todo: may be removed in favor of settings menu doing all actions
   settings_item_selected: (name) ->
     @structure.settings_item_selected(name) if @structure
 
